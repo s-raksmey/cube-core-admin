@@ -1,0 +1,107 @@
+mutation Login(
+  $email: String!
+  $password: String!
+  $audience: LoginAudience = ADMIN_CONSOLE
+) {
+  login(email: $email, password: $password, audience: $audience) {
+    ... on AuthChallenge {
+      challengeToken
+      nextStep
+      qrCodeDataUrl
+      manualEntryKey
+    }
+    ... on AuthPayload {
+      accessToken
+      refreshToken
+      audience
+      user {
+        id
+        email
+        fullName
+        role
+        type
+        tenantId
+        tenant {
+          id
+          name
+          slug
+          type
+          status
+        }
+      }
+    }
+  }
+}
+
+mutation VerifyLoginTotp($challengeToken: String!, $code: String!) {
+  verifyLoginTotp(challengeToken: $challengeToken, code: $code) {
+    accessToken
+    refreshToken
+    audience
+    user {
+      id
+      email
+      fullName
+      role
+      type
+      tenantId
+      tenant {
+        id
+        name
+        slug
+        type
+        status
+      }
+    }
+  }
+}
+
+mutation VerifyTotpEnrollment($challengeToken: String!, $code: String!) {
+  verifyTotpEnrollment(challengeToken: $challengeToken, code: $code) {
+    accessToken
+    refreshToken
+    audience
+    user {
+      id
+      email
+      fullName
+      role
+      type
+      tenantId
+      tenant {
+        id
+        name
+        slug
+        type
+        status
+      }
+    }
+  }
+}
+
+mutation VerifyRecoveryCode($challengeToken: String!, $code: String!) {
+  verifyRecoveryCode(challengeToken: $challengeToken, code: $code) {
+    accessToken
+    refreshToken
+    audience
+    user {
+      id
+      email
+      fullName
+      role
+      type
+      tenantId
+      tenant {
+        id
+        name
+        slug
+        type
+        status
+      }
+    }
+  }
+}
+
+mutation Logout {
+  logout
+}

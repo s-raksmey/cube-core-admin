@@ -1,0 +1,59 @@
+query SubTenants($search: String, $page: Int, $pageSize: Int) {
+  subTenants(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      name
+      slug
+      status
+      createdAt
+    }
+    total
+    page
+    pageSize
+  }
+}
+
+mutation CreateSubTenant($name: String!, $slug: String!) {
+  createSubTenant(name: $name, slug: $slug) {
+    id
+    name
+    slug
+    status
+  }
+}
+
+mutation SetSubTenantStatus($tenantId: ID!, $status: TenantStatus!) {
+  setSubTenantStatus(tenantId: $tenantId, status: $status) {
+    id
+    status
+  }
+}
+
+mutation CreateAdminUser(
+  $email: String!
+  $firstName: String!
+  $lastName: String!
+  $tenantId: ID!
+  $role: SubTenantRole = ADMIN
+) {
+  createAdminUser(
+    email: $email
+    firstName: $firstName
+    lastName: $lastName
+    tenantId: $tenantId
+    role: $role
+  ) {
+    user {
+      id
+      email
+      firstName
+      lastName
+      fullName
+      type
+      role
+      status
+    }
+    activationUrl
+    expiresAt
+  }
+}

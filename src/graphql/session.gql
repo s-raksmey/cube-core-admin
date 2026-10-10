@@ -1,0 +1,17 @@
+query CurrentUser {
+  me {
+    id
+    email
+    fullName
+    type
+    role
+    tenantId
+    tenant {
+      id
+      name
+      slug
+      type
+      status
+    }
+  }
+}

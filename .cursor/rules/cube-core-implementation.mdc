@@ -8,7 +8,7 @@ alwaysApply: true
 When the user asks you to **do / build / set up / add / implement / fix / change something for them**:
 
 1. **Inspect** existing code + `cube-core-server/docs/` first.
-2. **Build completely** in the correct app (`admin` UI here; API/domain in `cube-core-server`).
+2. **Build completely** in the correct app (`admin` UI here; GraphQL/domain in `cube-core-server`).
 3. **Follow** `.cursor/rules/cube-core-architecture.mdc` and `cube-core-server/docs/` (stack, architecture, roles, auth).
 4. **Update docs** in `cube-core-server/docs/` when product/architecture/roles change.
 5. **Reuse** Apollo Client, Zod, Tailwind, **shadcn/ui** (`components/ui`), role-scoped console patterns.

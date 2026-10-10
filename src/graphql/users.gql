@@ -1,0 +1,95 @@
+query MainTenantUsers($search: String, $page: Int, $pageSize: Int) {
+  mainTenantUsers(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      email
+      username
+      firstName
+      lastName
+      fullName
+      type
+      role
+      status
+      createdAt
+      lastLoginAt
+      totpEnabled
+      tenant {
+        id
+        name
+        slug
+        type
+      }
+    }
+    total
+    page
+    pageSize
+  }
+}
+
+mutation CreateMainTenantUser(
+  $firstName: String!
+  $lastName: String!
+  $email: String!
+) {
+  createMainTenantUser(
+    firstName: $firstName
+    lastName: $lastName
+    email: $email
+  ) {
+    user {
+      id
+      email
+      firstName
+      lastName
+      fullName
+      role
+      status
+      createdAt
+    }
+    activationUrl
+    expiresAt
+  }
+}
+
+mutation UpdateMainTenantUser($id: ID!, $input: UpdateMainTenantUserInput!) {
+  updateMainTenantUser(id: $id, input: $input) {
+    id
+    email
+    firstName
+    lastName
+    fullName
+    role
+    status
+    createdAt
+    lastLoginAt
+    totpEnabled
+  }
+}
+
+mutation DeleteMainTenantUser($id: ID!) {
+  deleteMainTenantUser(id: $id)
+}
+
+mutation GenerateMainTenantUserPasswordResetLink($userId: ID!) {
+  generateMainTenantUserPasswordResetLink(userId: $userId) {
+    resetUrl
+    expiresAt
+    user {
+      id
+      email
+      fullName
+    }
+  }
+}
+
+mutation GenerateMainTenantUserActivationLink($userId: ID!) {
+  generateMainTenantUserActivationLink(userId: $userId) {
+    activationUrl
+    expiresAt
+    user {
+      id
+      email
+      fullName
+    }
+  }
+}
