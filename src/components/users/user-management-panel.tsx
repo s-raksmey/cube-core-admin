@@ -84,6 +84,7 @@ export function UserManagementPanel() {
   const [activationTarget, setActivationTarget] = useState<MainUserRow | null>(
     null,
   );
+  const [activationResetMode, setActivationResetMode] = useState(false);
   const [activationLinkUser, setActivationLinkUser] = useState<MainUserRow | null>(null);
   const [activationLinkUnavailable, setActivationLinkUnavailable] = useState(false);
   const [activationLookupFailed, setActivationLookupFailed] = useState(false);
@@ -261,6 +262,7 @@ export function UserManagementPanel() {
   async function viewActivationLink(user: MainUserRow) {
     setBusyUserId(user.id);
     setFormError(null);
+    setActivationResetMode(false);
     setActivationLinkUnavailable(false);
     setActivationLookupFailed(false);
     try {
@@ -292,6 +294,7 @@ export function UserManagementPanel() {
     setActivationTarget(activationLinkUser);
     setActivationLinkUnavailable(false);
     setActivationLookupFailed(false);
+    setActivationResetMode(false);
     setFormError(null);
   }
 
@@ -300,6 +303,14 @@ export function UserManagementPanel() {
     const user = activationTarget;
     setActivationTarget(null);
     void viewActivationLink(user);
+  }
+
+  function requestUserReactivation(user: MainUserRow) {
+    setFormError(null);
+    setActivationResetMode(true);
+    setActivationLinkUnavailable(false);
+    setActivationLookupFailed(false);
+    setActivationTarget(user);
   }
 
   async function copyLink() {
@@ -373,6 +384,7 @@ export function UserManagementPanel() {
           canNext={canNext}
           onEdit={openEdit}
           onGenerateActivation={viewActivationLink}
+          onReactivate={requestUserReactivation}
           onResetPassword={(user) => {
             setFormError(null);
             setResetTarget(user);
@@ -398,6 +410,7 @@ export function UserManagementPanel() {
           confirmActivationLink, copyLink,
           activationLinkUnavailable, activationLinkUser, requestActivationRegeneration,
           activationLookupFailed, retryActivationLookup,
+          activationResetMode,
         }}
       />
 

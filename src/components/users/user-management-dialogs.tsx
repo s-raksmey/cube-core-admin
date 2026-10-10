@@ -28,6 +28,7 @@ type UserManagementDialogsProps = {
   activationTarget: User | null; setActivationTarget: Dispatch<SetStateAction<User | null>>;
   activationLinkUnavailable: boolean;
   activationLookupFailed: boolean;
+  activationResetMode: boolean;
   activationLinkUser: User | null;
   requestActivationRegeneration: () => void;
   retryActivationLookup: () => void;
@@ -62,6 +63,7 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
     confirmCreate, confirmUpdate, handleDelete, confirmResetPassword,
     confirmActivationLink, copyLink, activationLinkUnavailable,
     activationLinkUser, requestActivationRegeneration, activationLookupFailed,
+    activationResetMode,
     retryActivationLookup,
   } = props;
   return (
@@ -384,14 +386,24 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {activationLookupFailed
+              {activationResetMode
+                ? "Reactivate account and reset 2FA?"
+                : activationLookupFailed
                 ? "Could not retrieve the activation link"
                 : activationLinkUnavailable
                   ? "No existing link is available"
                   : "Generate a new activation link?"}
             </DialogTitle>
             <DialogDescription>
-              {activationLookupFailed ? (
+              {activationResetMode ? (
+                <>
+                  This will revoke active sessions, clear the existing 2FA setup and recovery codes, and move{" "}
+                  <span className="font-medium text-foreground">
+                    {activationTarget?.firstName} {activationTarget?.lastName}
+                  </span>{" "}
+                  ({activationTarget?.email}) back to pending activation. Their username and password will be cleared; they will set them again and scan a new QR code.
+                </>
+              ) : activationLookupFailed ? (
                 "The request failed. No link was generated and any existing link remains unchanged. Retry to view it, or restart activation to clear partial credentials and replace the old link."
               ) : (
                 <>
@@ -421,7 +433,11 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
             >
               Cancel
             </Button>
-            {activationLookupFailed ? (
+            {activationResetMode ? (
+              <Button type="button" onClick={confirmActivationLink} disabled={regenerating}>
+                {regenerating ? "Reactivating…" : "Reactivate"}
+              </Button>
+            ) : activationLookupFailed ? (
               <>
                 <Button type="button" variant="outline" onClick={retryActivationLookup} disabled={regenerating}>
                   Retry

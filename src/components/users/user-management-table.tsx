@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { KeyRound, Link2, Pencil, Trash2 } from "lucide-react";
+import { KeyRound, Link2, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import type { MainTenantUserRow } from "@/lib/apollo/types";
 
 type MainUserRow = MainTenantUserRow;
@@ -28,6 +28,7 @@ type UserManagementTableProps = {
   canNext: boolean;
   onEdit: (user: MainUserRow) => void;
   onGenerateActivation: (user: MainUserRow) => void;
+  onReactivate: (user: MainUserRow) => void;
   onResetPassword: (user: MainUserRow) => void;
   onDelete: (user: MainUserRow) => void;
   onPageChange: (page: number) => void;
@@ -55,6 +56,7 @@ export function UserManagementTable({
   canNext,
   onEdit,
   onGenerateActivation,
+  onReactivate,
   onResetPassword,
   onDelete,
   onPageChange,
@@ -119,6 +121,19 @@ export function UserManagementTable({
                   >
                     <Pencil className="size-4" />
                   </Button>
+                  {user.totpEnabled && currentUserId !== user.id ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      disabled={busyUserId === user.id || regenerating}
+                      onClick={() => onReactivate(user)}
+                      aria-label={`Reactivate ${user.firstName} ${user.lastName} and reset 2FA`}
+                      title="Reactivate account and set up 2FA again"
+                    >
+                      <RotateCcw className="size-4" />
+                    </Button>
+                  ) : null}
                   {user.status === "PENDING" ||
                   (user.status === "LOCKED" && !user.totpEnabled) ? (
                     <Button
