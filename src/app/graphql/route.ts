@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { print } from "graphql";
 import { RefreshSessionDocument } from "@/lib/apollo/generated/graphql";
@@ -17,6 +18,81 @@ type SessionTokens = {
   refreshFailed: boolean;
 };
 
+const refreshesInFlight = new Map<string, Promise<SessionTokens>>();
+const MAX_GRAPHQL_BODY_BYTES = 1_000_000;
+
+function refreshKey(token: string) {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+async function refreshSession(refreshToken: string): Promise<SessionTokens> {
+  try {
+    const refreshResponse = await fetch(`${authServerBaseUrl()}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-cube-auth-action-secret": process.env.ADMIN_AUTH_ACTION_SECRET ?? "",
+      },
+      body: JSON.stringify({
+        query: print(RefreshSessionDocument),
+        variables: { refreshToken, audience: ADMIN_AUDIENCE },
+      }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(15_000),
+    });
+    const json = (await refreshResponse.json()) as {
+      data?: {
+        refreshSession?: { accessToken?: string; refreshToken?: string };
+      };
+      errors?: { extensions?: { code?: string } }[];
+    };
+    const session = json.data?.refreshSession;
+    if (
+      refreshResponse.ok &&
+      session?.accessToken &&
+      session.refreshToken
+    ) {
+      return {
+        accessToken: session.accessToken,
+        refreshToken: session.refreshToken,
+        rotated: true,
+        refreshFailed: false,
+      };
+    }
+
+    const terminalFailure = json.errors?.some(({ extensions }) =>
+      ["UNAUTHENTICATED", "FORBIDDEN"].includes(extensions?.code ?? ""),
+    );
+    return {
+      accessToken: null,
+      refreshToken: null,
+      rotated: false,
+      refreshFailed: Boolean(terminalFailure),
+    };
+  } catch {
+    // Preserve cookies for transient upstream failures so a later request can retry.
+    return {
+      accessToken: null,
+      refreshToken: null,
+      rotated: false,
+      refreshFailed: false,
+    };
+  }
+}
+
+function refreshSessionOnce(refreshToken: string) {
+  // Coalesce overlapping requests handled by this Next.js worker.
+  const key = refreshKey(refreshToken);
+  const existing = refreshesInFlight.get(key);
+  if (existing) return existing;
+
+  const pending = refreshSession(refreshToken).finally(() => {
+    refreshesInFlight.delete(key);
+  });
+  refreshesInFlight.set(key, pending);
+  return pending;
+}
+
 async function resolveSessionTokens(): Promise<SessionTokens> {
   const [accessToken, refreshToken] = await Promise.all([
     readAccessToken(ADMIN_AUDIENCE),
@@ -27,58 +103,74 @@ async function resolveSessionTokens(): Promise<SessionTokens> {
     return { accessToken, refreshToken, rotated: false, refreshFailed: false };
   }
   if (!refreshToken) {
-    return { accessToken: null, refreshToken: null, rotated: false, refreshFailed: false };
+    return {
+      accessToken: null,
+      refreshToken: null,
+      rotated: false,
+      refreshFailed: Boolean(accessToken),
+    };
   }
 
-  try {
-    const refreshResponse = await fetch(`${authServerBaseUrl()}/graphql`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: print(RefreshSessionDocument),
-        variables: { refreshToken, audience: ADMIN_AUDIENCE },
-      }),
-      cache: "no-store",
-    });
-    const json = (await refreshResponse.json()) as {
-      data?: {
-        refreshSession?: { accessToken?: string; refreshToken?: string };
-      };
-      errors?: { extensions?: { code?: string } }[];
-    };
-    const session = json.data?.refreshSession;
-    if (
-      !refreshResponse.ok ||
-      !session?.accessToken ||
-      !session.refreshToken
-    ) {
-      const expired = json.errors?.some(({ extensions }) =>
-        ["UNAUTHENTICATED", "FORBIDDEN"].includes(extensions?.code ?? ""),
-      );
-      return {
-        accessToken: null,
-        refreshToken: null,
-        rotated: false,
-        refreshFailed: Boolean(expired),
-      };
+  return refreshSessionOnce(refreshToken);
+}
+
+function graphQLError(message: string, status: number) {
+  return NextResponse.json({ errors: [{ message }] }, { status });
+}
+
+async function readBodyWithinLimit(request: Request): Promise<string | null> {
+  if (!request.body) return "";
+
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    totalBytes += value.byteLength;
+    if (totalBytes > MAX_GRAPHQL_BODY_BYTES) {
+      await reader.cancel();
+      return null;
     }
-    return {
-      accessToken: session.accessToken,
-      refreshToken: session.refreshToken,
-      rotated: true,
-      refreshFailed: false,
-    };
-  } catch {
-    return { accessToken: null, refreshToken: null, rotated: false, refreshFailed: false };
+    chunks.push(value);
   }
+
+  const body = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(body);
 }
 
 export async function POST(request: Request) {
+  const requestUrl = new URL(request.url);
   const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) {
-    return NextResponse.json({ errors: [{ message: "Cross-origin GraphQL request rejected" }] }, { status: 403 });
+  const fetchSite = request.headers.get("sec-fetch-site");
+  if (
+    (origin && origin !== requestUrl.origin) ||
+    fetchSite === "cross-site"
+  ) {
+    return graphQLError("Cross-origin GraphQL request rejected", 403);
   }
-  const body = await request.text();
+
+  const contentType = request.headers.get("content-type") ?? "";
+  if (!contentType.toLowerCase().startsWith("application/json")) {
+    return graphQLError("GraphQL requests must use application/json", 415);
+  }
+
+  const contentLength = Number(request.headers.get("content-length") ?? 0);
+  if (contentLength > MAX_GRAPHQL_BODY_BYTES) {
+    return graphQLError("GraphQL request is too large", 413);
+  }
+
+  const body = await readBodyWithinLimit(request);
+  if (body === null) {
+    return graphQLError("GraphQL request is too large", 413);
+  }
+
   const session = await resolveSessionTokens();
   let upstream: Response;
   try {
@@ -92,15 +184,21 @@ export async function POST(request: Request) {
       },
       body,
       cache: "no-store",
+      signal: AbortSignal.timeout(15_000),
     });
   } catch {
-    return NextResponse.json({ errors: [{ message: "GraphQL service unavailable" }] }, { status: 502 });
+    return graphQLError("GraphQL service unavailable", 502);
   }
 
   const response = new NextResponse(await upstream.text(), {
     status: upstream.status,
-    headers: { "Content-Type": upstream.headers.get("content-type") ?? "application/json" },
+    headers: {
+      "Content-Type":
+        upstream.headers.get("content-type") ?? "application/json",
+      "Cache-Control": "no-store",
+    },
   });
+
   if (session.rotated && session.accessToken && session.refreshToken) {
     applyAuthCookies(response, {
       audience: ADMIN_AUDIENCE,
@@ -110,5 +208,6 @@ export async function POST(request: Request) {
   } else if (session.refreshFailed) {
     clearAuthCookies(response, ADMIN_AUDIENCE);
   }
+
   return response;
 }

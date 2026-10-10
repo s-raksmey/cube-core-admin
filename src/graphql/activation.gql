@@ -27,19 +27,16 @@ mutation CompleteActivation(
     manualEntryKey
     email
     username
-    activationToken
   }
 }
 
 mutation CompleteActivationTotp(
   $challengeToken: String!
   $code: String!
-  $activationToken: String!
 ) {
   completeActivationTotp(
     challengeToken: $challengeToken
     code: $code
-    activationToken: $activationToken
   ) {
     success
     recoveryCodes

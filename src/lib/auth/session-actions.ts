@@ -44,7 +44,10 @@ async function requestGraphql<
 ): Promise<TData> {
   const response = await fetch(`${authServerBaseUrl()}/graphql`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-cube-auth-action-secret": process.env.ADMIN_AUTH_ACTION_SECRET ?? "",
+    },
     body: JSON.stringify({ query: print(document), variables }),
     cache: "no-store",
   });

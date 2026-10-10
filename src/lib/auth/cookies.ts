@@ -49,7 +49,7 @@ function writeAuthCookies(
     sameSite: "lax",
     secure,
     path: "/",
-    maxAge: 30,
+    maxAge: 5 * 60,
   });
 
   const otherAudience =

@@ -30,6 +30,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Cube Core Admin",
   description: "Cube Core management console",
+  referrer: "no-referrer",
 };
 
 export default function RootLayout({

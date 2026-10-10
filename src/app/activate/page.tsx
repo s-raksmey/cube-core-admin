@@ -19,7 +19,7 @@ type Step = "credentials" | "totp" | "recovery" | "done";
 function ActivateForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get("token") ?? "";
+  const [token] = useState(() => searchParams.get("token") ?? "");
 
   const [validating, setValidating] = useState(true);
   const [valid, setValid] = useState(false);
@@ -42,6 +42,10 @@ function ActivateForm() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (token) {
+      // Keep the bearer activation secret out of history and referrer URLs.
+      window.history.replaceState(window.history.state, "", "/activate");
+    }
     async function validate() {
       if (!token) {
         setValidating(false);
@@ -109,7 +113,6 @@ function ActivateForm() {
     const { ok, payload } = await activateTotp({
       challengeToken,
       code,
-      activationToken: token,
     });
     setLoading(false);
 
