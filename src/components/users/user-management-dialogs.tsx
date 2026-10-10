@@ -1,7 +1,7 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
-import type { MainTenantUserRow, UserStatus } from "@/lib/apollo/types";
+import type { MainTenantUserRow } from "@/lib/apollo/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Copy } from "lucide-react";
+import { Copy, RefreshCw } from "lucide-react";
 
 type LinkResult = { url: string; expiresAt: string; label: string };
 type User = MainTenantUserRow;
@@ -26,10 +26,16 @@ type UserManagementDialogsProps = {
   deleteTarget: User | null; setDeleteTarget: Dispatch<SetStateAction<User | null>>;
   resetTarget: User | null; setResetTarget: Dispatch<SetStateAction<User | null>>;
   activationTarget: User | null; setActivationTarget: Dispatch<SetStateAction<User | null>>;
+  activationLinkUnavailable: boolean;
+  activationLookupFailed: boolean;
+  activationLinkUser: User | null;
+  requestActivationRegeneration: () => void;
+  retryActivationLookup: () => void;
   firstName: string; setFirstName: Dispatch<SetStateAction<string>>;
   lastName: string; setLastName: Dispatch<SetStateAction<string>>;
   email: string; setEmail: Dispatch<SetStateAction<string>>;
-  status: UserStatus; setStatus: Dispatch<SetStateAction<UserStatus>>;
+  status: "ACTIVE" | "INACTIVE";
+  setStatus: Dispatch<SetStateAction<"ACTIVE" | "INACTIVE">>;
   formError: string | null; setFormError: Dispatch<SetStateAction<string | null>>;
   linkResult: LinkResult | null; setLinkResult: Dispatch<SetStateAction<LinkResult | null>>;
   creating: boolean; updating: boolean; deleting: boolean; resetting: boolean; regenerating: boolean;
@@ -54,7 +60,9 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
     formError, setFormError, linkResult, setLinkResult, creating, updating,
     deleting, resetting, regenerating, requestCreate, requestUpdate,
     confirmCreate, confirmUpdate, handleDelete, confirmResetPassword,
-    confirmActivationLink, copyLink,
+    confirmActivationLink, copyLink, activationLinkUnavailable,
+    activationLinkUser, requestActivationRegeneration, activationLookupFailed,
+    retryActivationLookup,
   } = props;
   return (
     <>
@@ -223,17 +231,29 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="edit-status">Status</Label>
-              <select
-                id="edit-status"
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as UserStatus)}
-              >
-                <option value="PENDING">PENDING</option>
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="LOCKED">LOCKED</option>
-                <option value="DISABLED">DISABLED</option>
-              </select>
+              {editUser?.status === "PENDING" ? (
+                <div className="space-y-1.5">
+                  <div className="flex h-9 items-center rounded-md border border-input px-3 text-sm text-muted-foreground">
+                    Pending activation
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    The user must complete activation before their access status
+                    can be changed here.
+                  </p>
+                </div>
+              ) : (
+                <select
+                  id="edit-status"
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  value={status}
+                  onChange={(e) =>
+                    setStatus(e.target.value as "ACTIVE" | "INACTIVE")
+                  }
+                >
+                  <option value="ACTIVE">Active</option>
+                  <option value="INACTIVE">Inactive</option>
+                </select>
+              )}
             </div>
             {formError ? (
               <p className="text-sm text-destructive">{formError}</p>
@@ -276,7 +296,12 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
                 {editUser?.firstName} {editUser?.lastName}
               </span>{" "}
               to {firstName.trim()} {lastName.trim()} ({email.trim()}), status{" "}
-              {status}?
+              {editUser?.status === "PENDING"
+                ? "Pending activation"
+                : status === "ACTIVE"
+                  ? "Active"
+                  : "Inactive"}
+              ?
             </DialogDescription>
           </DialogHeader>
           {formError ? (
@@ -358,14 +383,27 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Generate activation link?</DialogTitle>
+            <DialogTitle>
+              {activationLookupFailed
+                ? "Could not retrieve the activation link"
+                : activationLinkUnavailable
+                  ? "No existing link is available"
+                  : "Generate a new activation link?"}
+            </DialogTitle>
             <DialogDescription>
-              Generate a new single-use activation link for{" "}
-              <span className="font-medium text-foreground">
-                {activationTarget?.firstName} {activationTarget?.lastName}
-              </span>{" "}
-              ({activationTarget?.email})? Any previous unused activation link
-              for this user will be invalidated.
+              {activationLookupFailed ? (
+                "The request failed. No link was generated and any existing link remains unchanged. Retry to view it, or restart activation to clear partial credentials and replace the old link."
+              ) : (
+                <>
+                  {activationLinkUnavailable
+                    ? "The existing link is expired, already used, or cannot be recovered. Restart activation and generate a new single-use link for "
+                    : "Restart this user's unfinished activation and generate a new single-use link for "}
+                  <span className="font-medium text-foreground">
+                    {activationTarget?.firstName} {activationTarget?.lastName}
+                  </span>{" "}
+                  ({activationTarget?.email})? This clears their unverified username, password, and pending 2FA setup, then invalidates previous activation links. They will set up their credentials and scan a new QR code.
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
           {formError ? (
@@ -383,13 +421,24 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
             >
               Cancel
             </Button>
-            <Button
-              type="button"
-              onClick={confirmActivationLink}
-              disabled={regenerating}
-            >
-              {regenerating ? "Generating…" : "Yes, generate link"}
-            </Button>
+            {activationLookupFailed ? (
+              <>
+                <Button type="button" variant="outline" onClick={retryActivationLookup} disabled={regenerating}>
+                  Retry
+                </Button>
+                <Button type="button" onClick={confirmActivationLink} disabled={regenerating}>
+                  {regenerating ? "Generating…" : "Regenerate anyway"}
+                </Button>
+              </>
+            ) : (
+              <Button
+                type="button"
+                onClick={confirmActivationLink}
+                disabled={regenerating}
+              >
+                {regenerating ? "Resetting…" : "Reset activation and generate link"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -470,6 +519,12 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
               <Copy className="size-4" />
               Copy link
             </Button>
+            {activationLinkUser && linkResult?.label.startsWith("Activation link") ? (
+              <Button type="button" variant="outline" onClick={requestActivationRegeneration}>
+                <RefreshCw className="size-4" />
+                Regenerate link
+              </Button>
+            ) : null}
           </DialogFooter>
         </DialogContent>
       </Dialog>

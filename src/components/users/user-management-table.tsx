@@ -38,6 +38,10 @@ function formatDate(value?: string | null) {
   return new Date(value).toLocaleDateString();
 }
 
+function displayStatus(status: string | null) {
+  return status ?? "—";
+}
+
 export function UserManagementTable({
   users,
   currentUserId,
@@ -87,14 +91,14 @@ export function UserManagementTable({
               <TableCell>
                 <Badge
                   variant={
-                    user.status === "ACTIVE"
+                    displayStatus(user.status) === "ACTIVE"
                       ? "default"
-                      : user.status === "PENDING"
+                      : displayStatus(user.status) === "PENDING"
                         ? "secondary"
                         : "destructive"
                   }
                 >
-                  {user.status}
+                  {displayStatus(user.status)}
                 </Badge>
               </TableCell>
               <TableCell>{user.totpEnabled ? "On" : "Off"}</TableCell>
@@ -115,14 +119,15 @@ export function UserManagementTable({
                   >
                     <Pencil className="size-4" />
                   </Button>
-                  {user.status === "PENDING" || !user.totpEnabled ? (
+                  {user.status === "PENDING" ||
+                  (user.status === "LOCKED" && !user.totpEnabled) ? (
                     <Button
                       type="button"
                       size="sm"
                       variant="ghost"
                       disabled={busyUserId === user.id || regenerating}
                       onClick={() => onGenerateActivation(user)}
-                      aria-label={`Regenerate activation link for ${user.firstName} ${user.lastName}`}
+                      aria-label={`View activation link for ${user.firstName} ${user.lastName}`}
                     >
                       <Link2 className="size-4" />
                     </Button>

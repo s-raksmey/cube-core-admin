@@ -19,6 +19,8 @@ export type {
   GenerateMainTenantUserPasswordResetLinkMutationVariables,
   GenerateMainTenantUserActivationLinkMutation,
   GenerateMainTenantUserActivationLinkMutationVariables,
+  MainTenantUserActivationLinkQuery,
+  MainTenantUserActivationLinkQueryVariables,
   PlatformDashboardQuery,
   TenantDashboardQuery,
   SubTenantsQuery,

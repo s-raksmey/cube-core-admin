@@ -93,3 +93,10 @@ mutation GenerateMainTenantUserActivationLink($userId: ID!) {
     }
   }
 }
+
+query MainTenantUserActivationLink($userId: ID!) {
+  mainTenantUserActivationLink(userId: $userId) {
+    activationUrl
+    expiresAt
+  }
+}

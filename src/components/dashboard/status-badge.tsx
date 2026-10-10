@@ -6,7 +6,7 @@ export function StatusBadge({ status }: { status: string }) {
     normalized === "ACTIVE" || normalized === "PUBLISHED"
       ? "default"
       : normalized === "SUSPENDED" ||
-          normalized === "DISABLED" ||
+          normalized === "INACTIVE" ||
           normalized === "LOCKED"
         ? "destructive"
         : "secondary";
