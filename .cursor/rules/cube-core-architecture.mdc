@@ -59,12 +59,14 @@ Password reset: **SuperAdmin-generated links only** (no public forgot-password).
 ```text
 src/index.ts                                    # Node HTTP + Yoga → /graphql only
 src/modules/{auth,tenants,users,dashboard}/     # domain services
-src/graphql/{schema.graphql,resolvers.ts,context.ts}
+src/graphql/schema.graphql                      # single SDL
+src/graphql/resolvers/{auth,dashboard,tenants,users}/  # one op per *-resolver.ts
 src/lib/{db,auth,errors}
 prisma/schema.prisma
 ```
 
 - Server is **GraphQL-only** — no Next.js `app/`, no REST `/auth` or `/api`.
+- One SDL; resolvers split by domain folder. Business logic stays in `src/modules/*`.
 - Admin: `/graphql` rewrite + `lib/auth/*` Server Actions (no HTTP proxy routes).
 - Validate inputs with Zod in services.
 - Write `audit_logs` on privileged mutations.

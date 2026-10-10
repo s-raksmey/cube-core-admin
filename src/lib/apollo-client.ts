@@ -16,7 +16,7 @@ export function createApolloClient() {
   });
 
   const httpLink = new HttpLink({
-    uri: process.env.NEXT_PUBLIC_GRAPHQL_URL ?? "/graphql",
+    uri: "/graphql",
     credentials: "same-origin",
   });
 
