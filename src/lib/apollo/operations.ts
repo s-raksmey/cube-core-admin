@@ -16,9 +16,5 @@ export {
   CreateSubTenantDocument as CREATE_SUB_TENANT,
   SetSubTenantStatusDocument as SET_SUB_TENANT_STATUS,
   CreateAdminUserDocument as CREATE_ADMIN_USER,
-  LoginDocument as LOGIN_MUTATION,
-  VerifyLoginTotpDocument as VERIFY_LOGIN_TOTP,
-  VerifyTotpEnrollmentDocument as VERIFY_TOTP_ENROLLMENT,
-  VerifyRecoveryCodeDocument as VERIFY_RECOVERY_CODE,
   LogoutDocument as LOGOUT_MUTATION,
 } from "@/lib/apollo/generated/graphql";

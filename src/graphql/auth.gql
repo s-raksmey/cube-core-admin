@@ -10,26 +10,6 @@ mutation Login(
       qrCodeDataUrl
       manualEntryKey
     }
-    ... on AuthPayload {
-      accessToken
-      refreshToken
-      audience
-      user {
-        id
-        email
-        fullName
-        role
-        type
-        tenantId
-        tenant {
-          id
-          name
-          slug
-          type
-          status
-        }
-      }
-    }
   }
 }
 
@@ -104,4 +84,11 @@ mutation VerifyRecoveryCode($challengeToken: String!, $code: String!) {
 
 mutation Logout {
   logout
+}
+
+mutation RefreshSession($refreshToken: String!, $audience: LoginAudience!) {
+  refreshSession(refreshToken: $refreshToken, audience: $audience) {
+    accessToken
+    refreshToken
+  }
 }

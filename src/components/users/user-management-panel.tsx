@@ -363,7 +363,7 @@ export function UserManagementPanel() {
                           ? "default"
                           : user.status === "PENDING"
                             ? "secondary"
-                            : "outline"
+                            : "destructive"
                       }
                     >
                       {user.status}
@@ -644,6 +644,7 @@ export function UserManagementPanel() {
               >
                 <option value="PENDING">PENDING</option>
                 <option value="ACTIVE">ACTIVE</option>
+                <option value="LOCKED">LOCKED</option>
                 <option value="DISABLED">DISABLED</option>
               </select>
             </div>

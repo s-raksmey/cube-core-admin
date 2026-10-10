@@ -6,12 +6,9 @@ import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 import { SuperAdminDashboard } from "@/components/dashboard/superadmin-dashboard";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { AuthUser } from "@/lib/types";
-
-type MeData = { me: AuthUser | null };
 
 export default function DashboardPage() {
-  const { data, loading } = useQuery<MeData>(CURRENT_USER_QUERY);
+  const { data, loading } = useQuery(CURRENT_USER_QUERY);
   const user = data?.me;
 
   if (loading) {

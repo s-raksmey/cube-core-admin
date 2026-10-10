@@ -56,6 +56,7 @@ query TenantDashboard {
       fullName
       role
       status
+      createdAt
     }
     recentActivity {
       id

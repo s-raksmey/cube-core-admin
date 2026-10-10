@@ -5,25 +5,7 @@ export type MainTenantRole = "SUPERADMIN";
 export type SubTenantRole = "ADMIN" | "EDITOR" | "AUTHOR";
 
 export type UserRole = MainTenantRole | SubTenantRole;
-export type UserType = "MAIN" | "SUB";
-export type UserStatus = "PENDING" | "ACTIVE" | "DISABLED";
-
-export type AuthUser = {
-  id: string;
-  email: string;
-  username?: string | null;
-  fullName: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  type: UserType;
-  role: UserRole;
-  status?: UserStatus;
-  tenantId: string;
-  tenant: {
-    id: string;
-    name: string;
-    slug: string;
-    type: "MAIN" | "SUB";
-    status: "ACTIVE" | "SUSPENDED";
-  };
-};
+export type { UserStatus, UserType } from "@/lib/apollo/generated/graphql";
+export type AuthUser = NonNullable<
+  import("@/lib/apollo/generated/graphql").CurrentUserQuery["me"]
+>;

@@ -20,7 +20,7 @@ When building any feature, **read those docs + existing code first**. Do not inv
 
 - Domain logic lives in **server** `src/modules/*` services.
 - Resolvers stay thin — call services, never put business rules only in UI.
-- Admin: GraphQL + HttpOnly cookies via Server Actions; never store secrets in localStorage.
+- Admin: Server Actions handle login; the same-origin `/graphql` BFF refreshes/rotates HttpOnly sessions only when access expires; never store tokens in localStorage.
 
 ## Locked stack (do not swap)
 
@@ -51,6 +51,8 @@ SUB tenants (children of MAIN)
 2. Activation: username + password + mandatory TOTP + recovery codes (shown once)
 3. Returning login: TOTP verify (recovery-code path available)
 4. Then issue console-specific session
+
+- Three failed passwords or 2FA/recovery codes lock the user account for 15 minutes; the server owns counters, status, session revocation, and unlock behavior.
 
 Password reset: **SuperAdmin-generated links only** (no public forgot-password).
 

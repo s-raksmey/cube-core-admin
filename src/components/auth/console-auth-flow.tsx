@@ -4,25 +4,17 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useApolloClient } from "@apollo/client/react";
 import { ArrowRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordField } from "@/components/auth/password-field";
-import { establishAdminSession } from "@/lib/auth/session-actions";
 import {
-  LOGIN_MUTATION,
-  VERIFY_LOGIN_TOTP,
-  VERIFY_RECOVERY_CODE,
-  VERIFY_TOTP_ENROLLMENT,
-} from "@/lib/apollo/operations";
-import type {
-  LoginMutation,
-  VerifyLoginTotpMutation,
-  VerifyRecoveryCodeMutation,
-  VerifyTotpEnrollmentMutation,
-} from "@/lib/apollo/types";
+  loginAdmin,
+  verifyAdminLoginTotp,
+  verifyAdminRecoveryCode,
+  verifyAdminTotpEnrollment,
+} from "@/lib/auth/session-actions";
 
 type AuthStep = "landing" | "password" | "enroll" | "verify";
 
@@ -53,7 +45,6 @@ export function ConsoleAuthFlow({
   dashboardPath = "/dashboard",
 }: ConsoleAuthFlowProps) {
   const router = useRouter();
-  const apollo = useApolloClient();
   const [step, setStep] = useState<AuthStep>(
     initialShowLogin ? "password" : "landing",
   );
@@ -86,45 +77,22 @@ export function ConsoleAuthFlow({
     setError(null);
 
     try {
-      const result = await apollo.mutate<LoginMutation>({
-        mutation: LOGIN_MUTATION,
-        variables: {
-          email: email.trim(),
-          password,
-          audience: "ADMIN_CONSOLE",
-        },
+      const result = await loginAdmin({ email: email.trim(), password });
+      if (!result.ok) {
+        setError(result.error);
+        setLoading(false);
+        return;
+      }
+
+      setChallenge({
+        challengeToken: result.challengeToken,
+        nextStep: result.nextStep,
+        qrCodeDataUrl: result.qrCodeDataUrl ?? undefined,
+        manualEntryKey: result.manualEntryKey ?? undefined,
       });
-      const payload = result.data?.login;
-      if (!payload) {
-        setError("Unexpected login response");
-        setLoading(false);
-        return;
-      }
-
-      if ("accessToken" in payload) {
-        await establishAdminSession({
-          accessToken: payload.accessToken,
-          refreshToken: payload.refreshToken,
-        });
-        goToDashboard(dashboardPath);
-        return;
-      }
-
-      if ("challengeToken" in payload) {
-        setChallenge({
-          challengeToken: payload.challengeToken,
-          nextStep: payload.nextStep,
-          qrCodeDataUrl: payload.qrCodeDataUrl ?? undefined,
-          manualEntryKey: payload.manualEntryKey ?? undefined,
-        });
-        setCode("");
-        autoSubmitRef.current = false;
-        setStep(payload.nextStep === "TOTP_ENROLL" ? "enroll" : "verify");
-        setLoading(false);
-        return;
-      }
-
-      setError("Unexpected login response");
+      setCode("");
+      autoSubmitRef.current = false;
+      setStep(result.nextStep === "TOTP_ENROLL" ? "enroll" : "verify");
       setLoading(false);
     } catch (err) {
       setError(apolloErrorMessage(err, "Invalid username/email or password"));
@@ -138,48 +106,20 @@ export function ConsoleAuthFlow({
     setError(null);
 
     try {
-      const auth =
-        recovery
-          ? (
-              await apollo.mutate<VerifyRecoveryCodeMutation>({
-                mutation: VERIFY_RECOVERY_CODE,
-                variables: {
-                  challengeToken: challenge.challengeToken,
-                  code: nextCode,
-                },
-              })
-            ).data?.verifyRecoveryCode
-          : step === "enroll"
-            ? (
-                await apollo.mutate<VerifyTotpEnrollmentMutation>({
-                  mutation: VERIFY_TOTP_ENROLLMENT,
-                  variables: {
-                    challengeToken: challenge.challengeToken,
-                    code: nextCode,
-                  },
-                })
-              ).data?.verifyTotpEnrollment
-            : (
-                await apollo.mutate<VerifyLoginTotpMutation>({
-                  mutation: VERIFY_LOGIN_TOTP,
-                  variables: {
-                    challengeToken: challenge.challengeToken,
-                    code: nextCode,
-                  },
-                })
-              ).data?.verifyLoginTotp;
+      const input = { challengeToken: challenge.challengeToken, code: nextCode };
+      const result = recovery
+        ? await verifyAdminRecoveryCode(input)
+        : step === "enroll"
+          ? await verifyAdminTotpEnrollment(input)
+          : await verifyAdminLoginTotp(input);
 
-      if (!auth?.accessToken || !auth.refreshToken) {
-        setError("Verification failed");
+      if (!result.ok) {
+        setError(result.error);
         setLoading(false);
         autoSubmitRef.current = false;
         return;
       }
 
-      await establishAdminSession({
-        accessToken: auth.accessToken,
-        refreshToken: auth.refreshToken,
-      });
       goToDashboard(dashboardPath);
     } catch (err) {
       setError(apolloErrorMessage(err, "Could not verify the code"));

@@ -43,35 +43,8 @@ import {
 } from "@/components/ui/table";
 import type { AuthUser } from "@/lib/types";
 
-type PlatformDashboardData = {
-  platformDashboard: {
-    totalSubTenants: number;
-    activeSubTenants: number;
-    totalAdmins: number;
-    platformHealth: string;
-    growthByMonth: Array<{ month: string; count: number }>;
-    statusDistribution: Array<{ status: string; count: number }>;
-    recentSubTenants: Array<{
-      id: string;
-      name: string;
-      slug: string;
-      status: "ACTIVE" | "SUSPENDED";
-      createdAt: string;
-    }>;
-    recentActivity: Array<{
-      id: string;
-      action: string;
-      createdAt: string;
-      actorEmail?: string | null;
-      targetTenantName?: string | null;
-    }>;
-  };
-};
-
 export function SuperAdminDashboard({ user }: { user: AuthUser }) {
-  const { data, loading, error, refetch } = useQuery<PlatformDashboardData>(
-    PLATFORM_DASHBOARD_QUERY,
-  );
+  const { data, loading, error, refetch } = useQuery(PLATFORM_DASHBOARD_QUERY);
   const [createSubTenant, { loading: creatingTenant }] =
     useMutation(CREATE_SUB_TENANT);
   const [createAdminUser, { loading: creatingAdmin }] =

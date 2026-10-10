@@ -86,7 +86,6 @@ function writeClearAuthCookies(store: CookieWriter, audience: ConsoleAudience) {
   }
 }
 
-/** @deprecated Prefer Server Actions; kept for any remaining Response-based paths. */
 export function applyAuthCookies(
   response: NextResponse,
   input: {

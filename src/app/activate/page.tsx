@@ -79,10 +79,12 @@ function ActivateForm() {
     });
     setLoading(false);
 
-    if (!ok || typeof payload.challengeToken !== "string") {
-      setError(
-        typeof payload.error === "string" ? payload.error : "Activation failed",
-      );
+    if (!ok) {
+      setError(payload.error);
+      return;
+    }
+    if (typeof payload.challengeToken !== "string") {
+      setError("Activation failed");
       return;
     }
 

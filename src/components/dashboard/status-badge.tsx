@@ -5,7 +5,9 @@ export function StatusBadge({ status }: { status: string }) {
   const variant =
     normalized === "ACTIVE" || normalized === "PUBLISHED"
       ? "default"
-      : normalized === "SUSPENDED" || normalized === "DISABLED"
+      : normalized === "SUSPENDED" ||
+          normalized === "DISABLED" ||
+          normalized === "LOCKED"
         ? "destructive"
         : "secondary";
 

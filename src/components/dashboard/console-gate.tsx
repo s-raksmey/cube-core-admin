@@ -6,14 +6,11 @@ import { useQuery } from "@apollo/client/react";
 import { CURRENT_USER_QUERY } from "@/lib/apollo/operations";
 import { ConsoleShell } from "@/components/dashboard/console-shell";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { AuthUser } from "@/lib/types";
-
-type MeData = { me: AuthUser | null };
 
 export function ConsoleGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const redirected = useRef(false);
-  const { data, loading, error, refetch } = useQuery<MeData>(CURRENT_USER_QUERY, {
+  const { data, loading, error, refetch } = useQuery(CURRENT_USER_QUERY, {
     fetchPolicy: "network-only",
     errorPolicy: "all",
   });
