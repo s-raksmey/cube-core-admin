@@ -5,6 +5,6 @@ export default function ConsoleLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Always pass children through so Instant Navigation can validate nested pages.
+  // ConsoleGate keeps route content hidden until the session is authorized.
   return <ConsoleGate>{children}</ConsoleGate>;
 }

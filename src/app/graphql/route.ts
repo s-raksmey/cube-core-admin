@@ -118,6 +118,27 @@ function graphQLError(message: string, status: number) {
   return NextResponse.json({ errors: [{ message }] }, { status });
 }
 
+function hasUnauthenticatedError(body: string, requestBody: string) {
+  try {
+    const payload = JSON.parse(body) as {
+      errors?: { extensions?: { code?: string } }[];
+    };
+    const request = JSON.parse(requestBody) as {
+      operationName?: string;
+      query?: string;
+    };
+    const isCurrentUserCheck =
+      request.operationName === "CurrentUser" ||
+      /\bquery\s+CurrentUser\b/.test(request.query ?? "");
+
+    return isCurrentUserCheck && (payload.errors?.some(
+      (error) => error.extensions?.code === "UNAUTHENTICATED",
+    ) ?? false);
+  } catch {
+    return false;
+  }
+}
+
 async function readBodyWithinLimit(request: Request): Promise<string | null> {
   if (!request.body) return "";
 
@@ -190,7 +211,8 @@ export async function POST(request: Request) {
     return graphQLError("GraphQL service unavailable", 502);
   }
 
-  const response = new NextResponse(await upstream.text(), {
+  const responseBody = await upstream.text();
+  const response = new NextResponse(responseBody, {
     status: upstream.status,
     headers: {
       "Content-Type":
@@ -205,7 +227,10 @@ export async function POST(request: Request) {
       accessToken: session.accessToken,
       refreshToken: session.refreshToken,
     });
-  } else if (session.refreshFailed) {
+  } else if (
+    session.refreshFailed ||
+    hasUnauthenticatedError(responseBody, body)
+  ) {
     clearAuthCookies(response, ADMIN_AUDIENCE);
   }
 

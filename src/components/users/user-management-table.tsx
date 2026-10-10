@@ -135,7 +135,7 @@ export function UserManagementTable({
                       disabled={
                         busyUserId === user.id ||
                         resetting ||
-                        user.status !== "ACTIVE"
+                        (user.status !== "ACTIVE" && user.status !== "LOCKED")
                       }
                       onClick={() => onResetPassword(user)}
                       aria-label={`Reset password for ${user.firstName} ${user.lastName}`}

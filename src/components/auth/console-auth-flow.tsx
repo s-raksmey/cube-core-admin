@@ -40,6 +40,12 @@ function apolloErrorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
+function requiresFreshLogin(message: string) {
+  return /locked|challenge expired|challenge already used|invalid sign-in challenge|enrollment expired/i.test(
+    message,
+  );
+}
+
 export function ConsoleAuthFlow({
   initialShowLogin = false,
   dashboardPath = "/dashboard",
@@ -117,6 +123,12 @@ export function ConsoleAuthFlow({
         setError(result.error);
         setLoading(false);
         autoSubmitRef.current = false;
+        setCode("");
+        if (requiresFreshLogin(result.error)) {
+          setChallenge(null);
+          setUseRecoveryCode(false);
+          setStep("password");
+        }
         return;
       }
 
@@ -125,6 +137,7 @@ export function ConsoleAuthFlow({
       setError(apolloErrorMessage(err, "Could not verify the code"));
       setLoading(false);
       autoSubmitRef.current = false;
+      setCode("");
     }
   }
 
@@ -283,6 +296,7 @@ export function ConsoleAuthFlow({
                       value={code}
                       onChange={(e) => {
                         setError(null);
+                        autoSubmitRef.current = false;
                         setCode(e.target.value.replace(/\D/g, "").slice(0, 6));
                       }}
                       required
@@ -312,6 +326,7 @@ export function ConsoleAuthFlow({
                       value={code}
                       onChange={(e) => {
                         setError(null);
+                        autoSubmitRef.current = false;
                         setCode(
                           useRecoveryCode
                             ? e.target.value.trim().toUpperCase()
