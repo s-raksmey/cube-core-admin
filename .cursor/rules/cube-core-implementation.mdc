@@ -16,4 +16,4 @@ When the user asks you to **do / build / set up / add / implement / fix / change
 
 **Exception:** `follow our rule` = teach only, do not fully implement. Do-it-for-me wins if both appear.
 
-Hard rules: SuperAdmin cannot log into sub-tenants; sub-tenant roles are Admin + Editor + Author; Main Console Users page = MAIN SUPERADMIN memberships only; unified identity; no alternate tech stack.
+Hard rules: SuperAdmin cannot log into sub-tenants; sub-tenant roles are Admin + Editor only; Main Console Users page = MAIN SUPERADMIN memberships only; unified identity; no alternate tech stack.

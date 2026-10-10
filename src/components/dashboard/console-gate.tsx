@@ -36,7 +36,7 @@ function isGraphQLResponseError(error: unknown) {
 export function ConsoleGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const redirected = useRef(false);
-  const [serviceUnavailable, setServiceUnavailable] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const { data, loading, error, refetch } = useQuery(CURRENT_USER_QUERY, {
     fetchPolicy: "network-only",
@@ -44,6 +44,8 @@ export function ConsoleGate({ children }: { children: React.ReactNode }) {
   });
   const user = data?.me ?? null;
   const ready = !loading && !!user;
+  const serviceUnavailable =
+    timedOut || (Boolean(error) && !isGraphQLResponseError(error));
 
   const retrySession = useCallback(async () => {
     setRetrying(true);
@@ -53,17 +55,17 @@ export function ConsoleGate({ children }: { children: React.ReactNode }) {
         SESSION_CHECK_TIMEOUT_MS,
       );
       if (result.data?.me) {
-        setServiceUnavailable(false);
+        setTimedOut(false);
         return;
       }
       if (result.error && !isGraphQLResponseError(result.error)) {
-        setServiceUnavailable(true);
+        setTimedOut(true);
         return;
       }
       redirected.current = true;
       router.replace("/login");
     } catch {
-      setServiceUnavailable(true);
+      setTimedOut(true);
     } finally {
       setRetrying(false);
     }
@@ -73,7 +75,7 @@ export function ConsoleGate({ children }: { children: React.ReactNode }) {
     if (!loading) return;
 
     const timeout = window.setTimeout(
-      () => setServiceUnavailable(true),
+      () => setTimedOut(true),
       SESSION_CHECK_TIMEOUT_MS,
     );
     return () => window.clearTimeout(timeout);
@@ -83,10 +85,7 @@ export function ConsoleGate({ children }: { children: React.ReactNode }) {
     if (loading || redirected.current) return;
 
     if (user) return;
-    if (error && !isGraphQLResponseError(error)) {
-      setServiceUnavailable(true);
-      return;
-    }
+    if (error && !isGraphQLResponseError(error)) return;
 
     // `me` is the session authority. A null result means the session is
     // expired/revoked; retrying here would toggle Apollo's loading state and

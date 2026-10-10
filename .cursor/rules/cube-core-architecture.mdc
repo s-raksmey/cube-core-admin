@@ -15,7 +15,7 @@ When building any feature, **read those docs + existing code first**. Do not inv
 | --- | --- |
 | `cube-core-server` | System of record: GraphQL, Prisma, auth, domain, audit |
 | `cube-core-admin` | Main console UI (SuperAdmin). BFF + Apollo → server |
-| `cube-core-tenant` | Sub-tenant console UI (Admin/Editor/Author). BFF + Apollo → server |
+| `cube-core-tenant` | Sub-tenant console UI (Admin/Editor). BFF + Apollo → server |
 | `cube-core-website` | Public marketing only — no privileged GraphQL |
 
 - Domain logic lives in **server** `src/modules/*` services.
@@ -35,13 +35,13 @@ MAIN tenant (slug: core-super-admin, singleton)
   └── users + tenant_memberships → SUPERADMIN only
 
 SUB tenants (children of MAIN)
-  └── users + tenant_memberships → ADMIN | EDITOR | AUTHOR
+  └── users + tenant_memberships → ADMIN | EDITOR
 ```
 
 - Unified identity: `users`, `roles`, `tenant_memberships` (not MainUser/SubUser).
 - **Never** create a second MAIN tenant.
 - **Never** let SuperAdmin obtain a sub-tenant / tenant-app session.
-- **Never** let Admin/Editor/Author sign into the main console.
+- **Never** let Admin/Editor sign into the main console.
 - Separate cookies/audiences: `ADMIN_CONSOLE` vs `TENANT_APP`.
 - UI may hide actions; **server must enforce** role + tenant on every operation.
 
@@ -89,3 +89,11 @@ prisma/schema.prisma
 3. SDL + resolvers + service (not UI-only filtering)
 4. Docs updated if behavior/architecture/roles changed
 5. Reused patterns; no alternate stack
+
+## GraphQL field selection and efficient reads
+
+- Request only fields needed by the screen/action in each `src/graphql/*.gql` operation; avoid broad selections “just in case”.
+- GraphQL limits response fields but does not automatically limit Prisma reads. Server read services must use explicit typed Prisma `select` projections and avoid full-model list fetches.
+- Never load password hashes, TOTP secrets, recovery codes, or other credentials for display. For a 2FA-enabled indicator, select only `enabledAt`.
+- Keep tenant authorization enforced independently of requested fields. Omitted fields are not access control. Keep list pagination bounded.
+- Follow `cube-core-server/docs/ARCHITECTURE.md` → “GraphQL field selection and data efficiency”.
