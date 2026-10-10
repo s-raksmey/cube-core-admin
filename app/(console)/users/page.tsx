@@ -1,21 +1,18 @@
 import { PageHeader } from "@/components/dashboard/page-header";
-import { EmptyState } from "@/components/dashboard/empty-state";
+import { UserManagementPanel } from "@/components/users/user-management-panel";
 
 export default function UsersPage() {
   return (
     <div>
       <PageHeader
-        title="Users"
-        description="Sub-tenant user management module placeholder."
+        title="User Management"
+        description="Manage users authorized to access the Main Console and administer the Main Tenant."
         crumbs={[
-          { label: "Workspace", href: "/dashboard" },
+          { label: "Console", href: "/dashboard" },
           { label: "Users" },
         ]}
       />
-      <EmptyState
-        title="Users module coming next"
-        description="Recent users already appear on the Admin dashboard."
-      />
+      <UserManagementPanel />
     </div>
   );
 }

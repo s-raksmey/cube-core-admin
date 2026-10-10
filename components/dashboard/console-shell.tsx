@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { Button } from "@/components/ui/button";
@@ -19,12 +18,10 @@ export function ConsoleShell({
   user: AuthUser;
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.replace("/");
-    router.refresh();
+    // Hard navigation clears any in-memory 2FA/login step state.
+    window.location.assign("/");
   }
 
   return (

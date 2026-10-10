@@ -1,71 +1,64 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
+import { ADMIN_AUDIENCE } from "@/lib/auth/console";
+import { applyAuthCookies } from "@/lib/auth/cookies";
+import { postAuth } from "@/lib/auth/upstream";
+import type { AuthUser } from "@/lib/types";
 
-const SESSION_COOKIE = "cube_session";
+const loginBodySchema = z.object({
+  /** Username or email. */
+  email: z.string().trim().min(1).max(254),
+  password: z.string().min(1),
+});
+
+type LoginResponse =
+  | {
+      status: "CHALLENGE";
+      nextStep: "TOTP_ENROLL" | "TOTP_VERIFY";
+      challengeToken: string;
+      qrCodeDataUrl?: string;
+    }
+  | {
+      status: "AUTHENTICATED";
+      accessToken: string;
+      refreshToken: string;
+      audience: typeof ADMIN_AUDIENCE;
+      user: AuthUser;
+    };
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as {
-    email?: string;
-    password?: string;
-  };
+  const raw = await request.json();
+  const parsed = loginBodySchema.safeParse(raw);
 
-  const serverUrl =
-    process.env.GRAPHQL_SERVER_URL ?? "http://localhost:4000/api/graphql";
-
-  const response = await fetch(serverUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      query: `
-        mutation Login(
-          $email: String!
-          $password: String!
-          $audience: LoginAudience
-        ) {
-          login(email: $email, password: $password, audience: $audience) {
-            token
-            user {
-              id
-              email
-              role
-              tenantId
-              tenant {
-                id
-                name
-                slug
-                type
-                status
-              }
-            }
-          }
-        }
-      `,
-      variables: {
-        email: body.email ?? "",
-        password: body.password ?? "",
-        audience: "ADMIN_CONSOLE",
-      },
-    }),
-  });
-
-  const payload = (await response.json()) as {
-    data?: { login?: { token: string; user: unknown } };
-    errors?: Array<{ message: string }>;
-  };
-
-  if (payload.errors?.length || !payload.data?.login) {
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: payload.errors?.[0]?.message ?? "Login failed" },
-      { status: 401 },
+      { error: "Valid username/email and password are required" },
+      { status: 400 },
     );
   }
 
-  const res = NextResponse.json({ user: payload.data.login.user });
-  res.cookies.set(SESSION_COOKIE, payload.data.login.token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7,
-  });
-  return res;
+  try {
+    const payload = await postAuth<LoginResponse>(
+      "/api/auth/login",
+      parsed.data,
+      ADMIN_AUDIENCE,
+    );
+
+    if (payload.status === "CHALLENGE") {
+      return NextResponse.json(payload);
+    }
+
+    const res = NextResponse.json({ user: payload.user });
+    applyAuthCookies(res, {
+      audience: ADMIN_AUDIENCE,
+      accessToken: payload.accessToken,
+      refreshToken: payload.refreshToken,
+    });
+    return res;
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Login failed" },
+      { status: 401 },
+    );
+  }
 }

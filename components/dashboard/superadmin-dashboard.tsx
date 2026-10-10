@@ -84,8 +84,12 @@ export function SuperAdminDashboard({ user }: { user: AuthUser }) {
   const [tenantName, setTenantName] = useState("");
   const [tenantSlug, setTenantSlug] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
+  const [adminFirstName, setAdminFirstName] = useState("");
+  const [adminLastName, setAdminLastName] = useState("");
   const [adminTenantId, setAdminTenantId] = useState("");
+  const [adminActivationUrl, setAdminActivationUrl] = useState<string | null>(
+    null,
+  );
   const [search, setSearch] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -118,16 +122,24 @@ export function SuperAdminDashboard({ user }: { user: AuthUser }) {
   async function handleCreateAdmin() {
     setFormError(null);
     try {
-      await createAdminUser({
+      const result = await createAdminUser({
         variables: {
           email: adminEmail,
-          password: adminPassword,
+          firstName: adminFirstName,
+          lastName: adminLastName,
           tenantId: adminTenantId,
+          role: "ADMIN",
         },
       });
-      setAdminOpen(false);
+      const payload = (
+        result.data as {
+          createAdminUser?: { activationUrl?: string };
+        } | null
+      )?.createAdminUser;
+      setAdminActivationUrl(payload?.activationUrl ?? null);
       setAdminEmail("");
-      setAdminPassword("");
+      setAdminFirstName("");
+      setAdminLastName("");
       setAdminTenantId("");
       await refetch();
     } catch (e) {
@@ -211,6 +223,24 @@ export function SuperAdminDashboard({ user }: { user: AuthUser }) {
                       placeholder="Paste sub-tenant id"
                     />
                   </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="admin-first-name">First name</Label>
+                      <Input
+                        id="admin-first-name"
+                        value={adminFirstName}
+                        onChange={(e) => setAdminFirstName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="admin-last-name">Last name</Label>
+                      <Input
+                        id="admin-last-name"
+                        value={adminLastName}
+                        onChange={(e) => setAdminLastName(e.target.value)}
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="admin-email">Email</Label>
                     <Input
@@ -220,15 +250,14 @@ export function SuperAdminDashboard({ user }: { user: AuthUser }) {
                       onChange={(e) => setAdminEmail(e.target.value)}
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="admin-password">Password</Label>
-                    <Input
-                      id="admin-password"
-                      type="password"
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                    />
-                  </div>
+                  {adminActivationUrl ? (
+                    <div className="space-y-1.5">
+                      <Label>Activation link</Label>
+                      <p className="break-all rounded-md bg-muted p-2 text-xs">
+                        {adminActivationUrl}
+                      </p>
+                    </div>
+                  ) : null}
                   {formError ? (
                     <p className="text-sm text-destructive">{formError}</p>
                   ) : null}

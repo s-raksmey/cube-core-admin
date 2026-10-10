@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@apollo/client/react";
 import { ME_QUERY } from "@/lib/graphql/operations";
@@ -12,18 +12,37 @@ type MeData = { me: AuthUser | null };
 
 export function ConsoleGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { data, loading, error } = useQuery<MeData>(ME_QUERY);
+  const redirected = useRef(false);
+  const { data, loading, error, refetch } = useQuery<MeData>(ME_QUERY, {
+    fetchPolicy: "network-only",
+    errorPolicy: "all",
+  });
   const user = data?.me ?? null;
-  const ready = !loading && !!user && !error;
+  const ready = !loading && !!user;
 
   useEffect(() => {
-    if (!loading && (!user || error)) {
-      router.replace("/");
-    }
-  }, [loading, user, error, router]);
+    if (loading || redirected.current) return;
 
-  // Always keep {children} in the render tree so Next.js Instant Navigation
-  // can validate nested segments like /dashboard.
+    if (user) return;
+
+    // One quiet retry — covers the access-cookie refresh race right after login.
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        const result = await refetch();
+        if (cancelled) return;
+        if (result.data?.me) return;
+        redirected.current = true;
+        router.replace("/login");
+      })();
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [loading, user, error, refetch, router]);
+
   if (!ready) {
     return (
       <>
@@ -32,6 +51,9 @@ export function ConsoleGate({ children }: { children: React.ReactNode }) {
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-40 w-full" />
             <Skeleton className="h-10 w-2/3" />
+            <p className="text-center text-sm text-muted-foreground">
+              Opening console…
+            </p>
           </div>
         </div>
         <div hidden aria-hidden>
