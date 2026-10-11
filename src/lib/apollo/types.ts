@@ -2,7 +2,10 @@
  * Apollo operation / schema types.
  * Sources: `src/graphql/*.gql` → `npm run graphql:codegen`
  */
-import type { MainTenantUsersQuery } from "@/lib/apollo/generated/graphql";
+import type {
+  MainTenantUsersQuery,
+  SubTenantsQuery,
+} from "@/lib/apollo/generated/graphql";
 
 export type {
   CurrentUserQuery,
@@ -24,9 +27,22 @@ export type {
   PlatformDashboardQuery,
   TenantDashboardQuery,
   SubTenantsQuery,
+  SubTenantsQueryVariables,
   CreateSubTenantMutation,
+  CreateSubTenantMutationVariables,
+  UpdateSubTenantMutation,
+  UpdateSubTenantMutationVariables,
   SetSubTenantStatusMutation,
+  SetSubTenantStatusMutationVariables,
   CreateAdminUserMutation,
+  CreateAdminUserMutationVariables,
+  ManagedSubTenantUsersQuery,
+  ManagedSubTenantUsersQueryVariables,
+  SubTenantUserActivationLinkQuery,
+  SubTenantUserActivationLinkQueryVariables,
+  RegenerateSubTenantUserActivationLinkMutation,
+  RegenerateSubTenantUserActivationLinkMutationVariables,
+  ActivationStatus,
   LoginMutation,
   VerifyLoginTotpMutation,
   VerifyTotpEnrollmentMutation,
@@ -38,3 +54,5 @@ export type {
 /** One row from `mainTenantUsers`. */
 export type MainTenantUserRow =
   MainTenantUsersQuery["mainTenantUsers"]["items"][number];
+
+export type SubTenantRow = SubTenantsQuery["subTenants"]["items"][number];

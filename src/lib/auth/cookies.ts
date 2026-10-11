@@ -52,22 +52,6 @@ function writeAuthCookies(
     maxAge: 5 * 60,
   });
 
-  const otherAudience =
-    input.audience === "ADMIN_CONSOLE" ? "TENANT_APP" : "ADMIN_CONSOLE";
-  store.set(REFRESH_BY_AUDIENCE[otherAudience], "", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure,
-    path: "/",
-    maxAge: 0,
-  });
-  store.set(ACCESS_BY_AUDIENCE[otherAudience], "", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure,
-    path: "/",
-    maxAge: 0,
-  });
 }
 
 function writeClearAuthCookies(store: CookieWriter, audience: ConsoleAudience) {

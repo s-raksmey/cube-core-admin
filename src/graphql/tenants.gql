@@ -4,8 +4,17 @@ query SubTenants($search: String, $page: Int, $pageSize: Int) {
       id
       name
       slug
+      type
       status
       createdAt
+      managementDomain
+      websiteDomain
+      managementDomainStatus
+      websiteDomainStatus
+      managementDomainVerifiedAt
+      websiteDomainVerifiedAt
+      localDevelopmentHostname
+      userCount
     }
     total
     page
@@ -13,12 +22,76 @@ query SubTenants($search: String, $page: Int, $pageSize: Int) {
   }
 }
 
-mutation CreateSubTenant($name: String!, $slug: String!) {
-  createSubTenant(name: $name, slug: $slug) {
+mutation CreateSubTenant(
+  $name: String!
+  $slug: String!
+  $managementDomain: String
+  $websiteDomain: String
+) {
+  createSubTenant(
+    name: $name
+    slug: $slug
+    managementDomain: $managementDomain
+    websiteDomain: $websiteDomain
+  ) {
     id
     name
     slug
     status
+    managementDomain
+    websiteDomain
+    managementDomainStatus
+    websiteDomainStatus
+    localDevelopmentHostname
+    managementDomainVerifiedAt
+    websiteDomainVerifiedAt
+    userCount
+  }
+}
+
+mutation UpdateSubTenant($tenantId: ID!, $input: UpdateSubTenantInput!) {
+  updateSubTenant(tenantId: $tenantId, input: $input) {
+    id
+    name
+    slug
+    status
+    managementDomain
+    websiteDomain
+    managementDomainStatus
+    websiteDomainStatus
+    localDevelopmentHostname
+    managementDomainVerifiedAt
+    websiteDomainVerifiedAt
+    userCount
+  }
+}
+
+mutation StartTenantDomainVerification($tenantId: ID!, $purpose: TenantDomainPurpose!) {
+  startTenantDomainVerification(tenantId: $tenantId, purpose: $purpose) {
+    purpose
+    hostname
+    status
+    verifiedAt
+    recordName
+    recordValue
+  }
+}
+
+mutation CheckTenantDomainVerification($tenantId: ID!, $purpose: TenantDomainPurpose!) {
+  checkTenantDomainVerification(tenantId: $tenantId, purpose: $purpose) {
+    purpose
+    hostname
+    status
+    verifiedAt
+  }
+}
+
+mutation ActivateTenantDomain($tenantId: ID!, $purpose: TenantDomainPurpose!, $confirmHttpsAndRouting: Boolean!) {
+  activateTenantDomain(tenantId: $tenantId, purpose: $purpose, confirmHttpsAndRouting: $confirmHttpsAndRouting) {
+    purpose
+    hostname
+    status
+    verifiedAt
   }
 }
 
@@ -53,6 +126,38 @@ mutation CreateAdminUser(
       role
       status
     }
+    activationUrl
+    expiresAt
+  }
+}
+
+query ManagedSubTenantUsers($tenantId: ID!, $search: String, $page: Int, $pageSize: Int) {
+  subTenantUsers(tenantId: $tenantId, search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      fullName
+      email
+      role
+      accountStatus
+      activationStatus
+      activationLinkCreatedAt
+      activationLinkExpiresAt
+    }
+    total
+    page
+    pageSize
+  }
+}
+
+query SubTenantUserActivationLink($tenantId: ID!, $userId: ID!) {
+  subTenantUserActivationLink(tenantId: $tenantId, userId: $userId) {
+    activationUrl
+    expiresAt
+  }
+}
+
+mutation RegenerateSubTenantUserActivationLink($tenantId: ID!, $userId: ID!) {
+  regenerateSubTenantUserActivationLink(tenantId: $tenantId, userId: $userId) {
     activationUrl
     expiresAt
   }

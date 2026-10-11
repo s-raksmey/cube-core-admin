@@ -163,15 +163,17 @@ export function UserManagementTable({
                       <KeyRound className="size-4" />
                     </Button>
                   ) : null}
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onDelete(user)}
-                    aria-label={`Delete ${user.firstName} ${user.lastName}`}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  {currentUserId !== user.id ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => onDelete(user)}
+                      aria-label={`Delete ${user.firstName} ${user.lastName}`}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  ) : null}
                 </div>
               </TableCell>
             </TableRow>
