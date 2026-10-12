@@ -39,8 +39,9 @@ function formatDate(value?: string | null) {
   return new Date(value).toLocaleDateString();
 }
 
-function displayStatus(status: string | null) {
-  return status ?? "—";
+function displayStatus(user: MainUserRow) {
+  if (user.membershipStatus === "DISABLED") return "SUSPENDED";
+  return user.status ?? "—";
 }
 
 export function UserManagementTable({
@@ -93,14 +94,14 @@ export function UserManagementTable({
               <TableCell>
                 <Badge
                   variant={
-                    displayStatus(user.status) === "ACTIVE"
+                    displayStatus(user) === "ACTIVE"
                       ? "default"
-                      : displayStatus(user.status) === "PENDING"
+                      : displayStatus(user) === "PENDING"
                         ? "secondary"
                         : "destructive"
                   }
                 >
-                  {displayStatus(user.status)}
+                  {displayStatus(user)}
                 </Badge>
               </TableCell>
               <TableCell>{user.totpEnabled ? "On" : "Off"}</TableCell>

@@ -232,7 +232,7 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-status">Status</Label>
+              <Label htmlFor="edit-status">Access</Label>
               {editUser?.status === "PENDING" ? (
                 <div className="space-y-1.5">
                   <div className="flex h-9 items-center rounded-md border border-input px-3 text-sm text-muted-foreground">
@@ -252,8 +252,8 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
                     setStatus(e.target.value as "ACTIVE" | "INACTIVE")
                   }
                 >
-                  <option value="ACTIVE">Active</option>
-                  <option value="INACTIVE">Inactive</option>
+                  <option value="ACTIVE">Unsuspend</option>
+                  <option value="INACTIVE">Suspend</option>
                 </select>
               )}
             </div>
@@ -301,8 +301,8 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
               {editUser?.status === "PENDING"
                 ? "Pending activation"
                 : status === "ACTIVE"
-                  ? "Active"
-                  : "Inactive"}
+                  ? "Unsuspend"
+                  : "Suspend"}
               ?
             </DialogDescription>
           </DialogHeader>
@@ -340,15 +340,15 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete User</DialogTitle>
+            <DialogTitle>Delete user?</DialogTitle>
             <DialogDescription>
-              This disables{" "}
+              Suspend{" "}
               <span className="font-medium text-foreground">
                 {deleteTarget?.firstName} {deleteTarget?.lastName}
               </span>{" "}
-              ({deleteTarget?.email}), revokes their sessions, and invalidates
-              outstanding reset links. The last active SuperAdmin cannot be
-              removed.
+              ({deleteTarget?.email}) first. Once suspended, deleting permanently
+              removes their Main Tenant account and all sessions. The last active
+              SuperAdmin cannot be suspended.
             </DialogDescription>
           </DialogHeader>
           {formError ? (
@@ -368,7 +368,7 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
               onClick={handleDelete}
               disabled={deleting}
             >
-              {deleting ? "Deleting…" : "Delete User"}
+              {deleting ? "Deleting…" : "Delete user"}
             </Button>
           </DialogFooter>
         </DialogContent>

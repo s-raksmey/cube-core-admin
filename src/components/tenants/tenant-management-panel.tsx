@@ -9,7 +9,6 @@ import {
   Pencil,
   Plus,
   Power,
-  UserPlus,
   UsersRound,
 } from "lucide-react";
 import Link from "next/link";
@@ -35,20 +34,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  CREATE_ADMIN_USER,
   CREATE_SUB_TENANT,
   SET_SUB_TENANT_STATUS,
   SUB_TENANTS_QUERY,
   UPDATE_SUB_TENANT,
 } from "@/lib/apollo/operations";
-import type {
-  CreateAdminUserMutation,
-  SubTenantRow,
-} from "@/lib/apollo/types";
-import {
-  TenantCreateUserDialog,
-  type TenantUserFormValues,
-} from "@/components/tenants/tenant-create-user-dialog";
+import type { SubTenantRow } from "@/lib/apollo/types";
 import {
   TenantFormDialog,
   type TenantFormValues,
@@ -70,17 +61,11 @@ export function TenantManagementPanel() {
   const [formTarget, setFormTarget] = useState<
     { mode: "create"; tenant: null } | { mode: "edit"; tenant: SubTenantRow } | null
   >(null);
-  const [userTarget, setUserTarget] = useState<SubTenantRow | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailTenant, setDetailTenant] = useState<SubTenantRow | null>(null);
   const [domainTarget, setDomainTarget] = useState<{ tenant: SubTenantRow; purpose: TenantDomainPurpose } | null>(null);
-  const [activation, setActivation] = useState<{
-    activationUrl: string;
-    expiresAt: string;
-  } | null>(null);
   const [statusTarget, setStatusTarget] = useState<SubTenantRow | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
-  const [userError, setUserError] = useState<string | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [copiedTenantId, setCopiedTenantId] = useState<string | null>(null);
@@ -91,7 +76,6 @@ export function TenantManagementPanel() {
   });
   const [createTenant, { loading: creating }] = useMutation(CREATE_SUB_TENANT);
   const [updateTenant, { loading: updating }] = useMutation(UPDATE_SUB_TENANT);
-  const [createUser, { loading: creatingUser }] = useMutation(CREATE_ADMIN_USER);
   const [setTenantStatus, { loading: updatingStatus }] = useMutation(SET_SUB_TENANT_STATUS);
   const result = data?.subTenants;
   const tenants = result?.items ?? [];
@@ -137,23 +121,6 @@ export function TenantManagementPanel() {
       });
     } catch (mutationError) {
       setFormError(getErrorMessage(mutationError, "Unable to save tenant."));
-    }
-  }
-
-  async function submitUser(values: TenantUserFormValues) {
-    if (!userTarget) return;
-    setUserError(null);
-    try {
-      const response = await createUser({
-        variables: { ...values, tenantId: userTarget.id },
-      });
-      const payload = (response.data as CreateAdminUserMutation | null)?.createAdminUser;
-      if (!payload?.activationUrl) throw new Error("Activation link was not returned.");
-      setActivation({ activationUrl: payload.activationUrl, expiresAt: payload.expiresAt });
-      setNotice("User created. Share the activation link securely.");
-      await refetch();
-    } catch (mutationError) {
-      setUserError(getErrorMessage(mutationError, "Unable to create user."));
     }
   }
 
@@ -280,9 +247,6 @@ export function TenantManagementPanel() {
                         <Button variant="ghost" size="icon-sm" aria-label={`Edit ${tenant.name}`} title="Edit" onClick={() => { setFormError(null); setFormTarget({ mode: "edit", tenant }); }}>
                           <Pencil />
                         </Button>
-                        <Button variant="ghost" size="icon-sm" aria-label={`Create user in ${tenant.name}`} title="Create User" onClick={() => { setUserError(null); setActivation(null); setUserTarget(tenant); }}>
-                          <UserPlus />
-                        </Button>
                         <Button asChild variant="ghost" size="icon-sm" aria-label={`Manage users in ${tenant.name}`} title="Manage Users">
                           <Link href={`/tenants/${tenant.id}/users`}><UsersRound /></Link>
                         </Button>
@@ -315,20 +279,6 @@ export function TenantManagementPanel() {
           error={formError}
           onOpenChange={(open) => { if (!open) setFormTarget(null); }}
           onSubmit={(values) => void submitTenant(values)}
-        />
-      ) : null}
-
-      {userTarget ? (
-        <TenantCreateUserDialog
-          key={userTarget.id}
-          tenant={userTarget}
-          activationUrl={activation?.activationUrl ?? null}
-          expiresAt={activation?.expiresAt ?? null}
-          loading={creatingUser}
-          error={userError}
-          open
-          onOpenChange={(open) => { if (!open) { setUserTarget(null); setActivation(null); } }}
-          onSubmit={(values) => void submitUser(values)}
         />
       ) : null}
 

@@ -10,6 +10,7 @@ query MainTenantUsers($search: String, $page: Int, $pageSize: Int) {
       type
       role
       status
+      membershipStatus
       createdAt
       lastLoginAt
       totpEnabled
@@ -44,6 +45,7 @@ mutation CreateMainTenantUser(
       fullName
       role
       status
+      membershipStatus
       createdAt
     }
     activationUrl
@@ -60,6 +62,7 @@ mutation UpdateMainTenantUser($id: ID!, $input: UpdateMainTenantUserInput!) {
     fullName
     role
     status
+    membershipStatus
     createdAt
     lastLoginAt
     totpEnabled

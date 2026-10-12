@@ -24,5 +24,11 @@ export {
   ManagedSubTenantUsersDocument as MANAGED_SUB_TENANT_USERS_QUERY,
   SubTenantUserActivationLinkDocument as SUB_TENANT_USER_ACTIVATION_LINK_QUERY,
   RegenerateSubTenantUserActivationLinkDocument as REGENERATE_SUB_TENANT_USER_ACTIVATION_LINK,
+  UpdateManagedSubTenantUserDocument as UPDATE_MANAGED_SUB_TENANT_USER,
+  GenerateManagedSubTenantUserPasswordResetLinkDocument as GENERATE_MANAGED_SUB_TENANT_USER_PASSWORD_RESET,
+  DeleteManagedSubTenantUserDocument as DELETE_MANAGED_SUB_TENANT_USER,
+  TenantRolePermissionsDocument as TENANT_ROLE_PERMISSIONS_QUERY,
+  MainConsoleUserPermissionsDocument as MAIN_CONSOLE_USER_PERMISSIONS_QUERY,
+  UpdateTenantRolePermissionsDocument as UPDATE_TENANT_ROLE_PERMISSIONS,
   LogoutDocument as LOGOUT_MUTATION,
 } from "@/lib/apollo/generated/graphql";

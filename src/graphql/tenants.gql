@@ -136,9 +136,13 @@ query ManagedSubTenantUsers($tenantId: ID!, $search: String, $page: Int, $pageSi
     items {
       id
       fullName
+      firstName
+      lastName
+      username
       email
       role
       accountStatus
+      membershipStatus
       activationStatus
       activationLinkCreatedAt
       activationLinkExpiresAt
@@ -162,3 +166,27 @@ mutation RegenerateSubTenantUserActivationLink($tenantId: ID!, $userId: ID!) {
     expiresAt
   }
 }
+
+mutation UpdateManagedSubTenantUser($tenantId: ID!, $userId: ID!, $input: UpdateTenantUserInput!) {
+  updateManagedSubTenantUser(tenantId: $tenantId, userId: $userId, input: $input) {
+    id
+    email
+    firstName
+    lastName
+    role
+    status
+    membershipStatus
+  }
+}
+
+mutation GenerateManagedSubTenantUserPasswordResetLink($tenantId: ID!, $userId: ID!) {
+  generateManagedSubTenantUserPasswordResetLink(tenantId: $tenantId, userId: $userId) {
+    resetUrl
+    expiresAt
+  }
+}
+
+mutation DeleteManagedSubTenantUser($tenantId: ID!, $userId: ID!) {
+  deleteManagedSubTenantUser(tenantId: $tenantId, userId: $userId)
+}
+

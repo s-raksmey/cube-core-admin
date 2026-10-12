@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLazyQuery, useMutation, useQuery } from "@apollo/client/react";
-import { ArrowLeft, Check, Copy, RotateCw } from "lucide-react";
+import { ArrowLeft, Check, Copy, KeyRound, Pencil, Plus, RotateCcw, RotateCw, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { EmptyState } from "@/components/dashboard/empty-state";
@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -27,11 +28,17 @@ import {
 } from "@/components/ui/table";
 import {
   MANAGED_SUB_TENANT_USERS_QUERY,
+  CREATE_ADMIN_USER,
+  DELETE_MANAGED_SUB_TENANT_USER,
+  GENERATE_MANAGED_SUB_TENANT_USER_PASSWORD_RESET,
+  MAIN_CONSOLE_USER_PERMISSIONS_QUERY,
   REGENERATE_SUB_TENANT_USER_ACTIVATION_LINK,
   SUB_TENANT_USER_ACTIVATION_LINK_QUERY,
+  UPDATE_MANAGED_SUB_TENANT_USER,
 } from "@/lib/apollo/operations";
 import type {
   ManagedSubTenantUsersQuery,
+  MainConsoleUserPermissionsQuery,
   RegenerateSubTenantUserActivationLinkMutation,
   SubTenantUserActivationLinkQuery,
 } from "@/lib/apollo/types";
@@ -60,14 +67,43 @@ export function TenantUsersManagementPanel({ tenantId }: { tenantId: string }) {
   } | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [editor, setEditor] = useState<ManagedUser | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"ADMIN" | "EDITOR">("EDITOR");
+  const [suspended, setSuspended] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<ManagedUser | null>(null);
+
+  const { data: permissionsData, loading: permissionsLoading, error: permissionsError } = useQuery(
+    MAIN_CONSOLE_USER_PERMISSIONS_QUERY,
+    { fetchPolicy: "cache-and-network" },
+  );
+  const permissions = (permissionsData as MainConsoleUserPermissionsQuery | undefined)
+    ?.tenantUserPermissions ?? [];
+  const canViewUsers = permissions.includes("USERS_VIEW");
+  const canActivateUsers = permissions.includes("USERS_ACTIVATE");
+  const canCreateUsers = permissions.includes("USERS_CREATE");
+  const canEditUsers = permissions.includes("USERS_EDIT");
+  const canChangeRoles = permissions.includes("USERS_CHANGE_ROLE");
+  const canSuspendUsers = permissions.includes("USERS_SUSPEND");
+  const canResetPasswords = permissions.includes("USERS_RESET_PASSWORD");
+  const canDeleteUsers = permissions.includes("USERS_DELETE");
+  const hasActions = canEditUsers || canChangeRoles || canSuspendUsers || canActivateUsers || canResetPasswords || canDeleteUsers;
 
   const { data, loading, error, refetch } = useQuery(MANAGED_SUB_TENANT_USERS_QUERY, {
     variables: { tenantId, search: search || null, page, pageSize: PAGE_SIZE },
     notifyOnNetworkStatusChange: true,
+    skip: !canViewUsers,
   });
   const [regenerate, { loading: regenerating }] = useMutation(
     REGENERATE_SUB_TENANT_USER_ACTIVATION_LINK,
   );
+  const [createUser, { loading: creating }] = useMutation(CREATE_ADMIN_USER);
+  const [updateUser, { loading: updating }] = useMutation(UPDATE_MANAGED_SUB_TENANT_USER);
+  const [generateReset, { loading: generatingReset }] = useMutation(GENERATE_MANAGED_SUB_TENANT_USER_PASSWORD_RESET);
+  const [deleteUser, { loading: deleting }] = useMutation(DELETE_MANAGED_SUB_TENANT_USER);
   const [loadActivationLink, { loading: loadingLink }] = useLazyQuery(
     SUB_TENANT_USER_ACTIVATION_LINK_QUERY,
     { fetchPolicy: "no-cache" },
@@ -139,6 +175,49 @@ export function TenantUsersManagementPanel({ tenantId }: { tenantId: string }) {
     }
   }
 
+  function openCreate() {
+    setEditor(null); setFirstName(""); setLastName(""); setEmail(""); setRole(canChangeRoles ? "ADMIN" : "EDITOR"); setSuspended(false); setActionError(null); setEditorOpen(true);
+  }
+
+  function openEdit(user: ManagedUser) {
+    setEditor(user); setFirstName(user.firstName ?? ""); setLastName(user.lastName ?? ""); setEmail(user.email); setRole(user.role as "ADMIN" | "EDITOR"); setSuspended(user.membershipStatus === "DISABLED"); setActionError(null); setEditorOpen(true);
+  }
+
+  async function saveUser() {
+    setActionError(null);
+    try {
+      if (editor) {
+        await updateUser({ variables: { tenantId, userId: editor.id, input: {
+          ...(canEditUsers ? { firstName, lastName, email } : {}),
+          ...(canChangeRoles && role !== editor.role ? { role } : {}),
+          ...(canSuspendUsers && suspended !== (editor.membershipStatus === "DISABLED") ? { suspended } : {}),
+        } } });
+      } else {
+        const response = await createUser({ variables: { tenantId, firstName, lastName, email, role } });
+        const payload = response.data?.createAdminUser;
+        if (payload) setLinkResult({ user: { id: payload.user.id, fullName: payload.user.fullName, email: payload.user.email } as ManagedUser, url: payload.activationUrl, expiresAt: payload.expiresAt, isNew: true });
+      }
+      setEditorOpen(false); await refetch();
+    } catch (reason) { setActionError(errorText(reason)); }
+  }
+
+  async function resetPassword(user: ManagedUser) {
+    setActionError(null);
+    try {
+      const response = await generateReset({ variables: { tenantId, userId: user.id } });
+      const payload = response.data?.generateManagedSubTenantUserPasswordResetLink;
+      if (!payload) throw new Error("The password reset link was not returned.");
+      setLinkResult({ user, url: payload.resetUrl, expiresAt: payload.expiresAt, isNew: true });
+    } catch (reason) { setActionError(errorText(reason)); }
+  }
+
+  async function removeUser() {
+    if (!deleteTarget) return;
+    setActionError(null);
+    try { await deleteUser({ variables: { tenantId, userId: deleteTarget.id } }); setDeleteTarget(null); await refetch(); }
+    catch (reason) { setActionError(errorText(reason)); }
+  }
+
   function applySearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPage(1);
@@ -155,10 +234,10 @@ export function TenantUsersManagementPanel({ tenantId }: { tenantId: string }) {
           { label: "Tenants", href: "/tenants" },
           { label: "Users" },
         ]}
-        actions={<Button asChild variant="outline"><Link href="/tenants"><ArrowLeft /> Back to tenants</Link></Button>}
+        actions={<div className="flex gap-2">{canCreateUsers ? <Button onClick={openCreate}><Plus /> Create user</Button> : null}<Button asChild variant="outline"><Link href="/tenants"><ArrowLeft /> Back to tenants</Link></Button></div>}
       />
 
-      <form className="flex w-full gap-2 sm:max-w-xl" onSubmit={applySearch}>
+      {canViewUsers ? <form className="flex w-full gap-2 sm:max-w-xl" onSubmit={applySearch}>
         <Input
           aria-label="Search tenant users"
           placeholder="Search by name or email"
@@ -166,14 +245,21 @@ export function TenantUsersManagementPanel({ tenantId }: { tenantId: string }) {
           onChange={(event) => setSearchInput(event.target.value)}
         />
         <Button type="submit" variant="outline">Search</Button>
-      </form>
+      </form> : null}
 
+      {permissionsError ? <p className="text-sm text-destructive" role="alert">{permissionsError.message}</p> : null}
+      {!permissionsLoading && !permissionsError && !canViewUsers ? (
+        <EmptyState
+          title="User management unavailable"
+          description="Your SuperAdmin user-management permissions do not allow viewing users in this sub-tenant."
+        />
+      ) : null}
       {error && !data ? <p className="text-sm text-destructive" role="alert">{error.message}</p> : null}
-      {loading && users.length === 0 ? (
+      {canViewUsers && loading && users.length === 0 ? (
         <div className="space-y-2 rounded-xl border border-border p-4" aria-label="Loading tenant users">
           {Array.from({ length: 5 }, (_, index) => <Skeleton key={index} className="h-11 w-full" />)}
         </div>
-      ) : users.length === 0 ? (
+      ) : canViewUsers && users.length === 0 ? (
         <EmptyState
           title={search ? "No users found" : "No users in this tenant"}
           description={search ? "Try a different name or email." : "Create a user from the tenant list to invite someone."}
@@ -191,37 +277,41 @@ export function TenantUsersManagementPanel({ tenantId }: { tenantId: string }) {
                   <TableHead>Activation</TableHead>
                   <TableHead>Link generated</TableHead>
                   <TableHead>Link expiry</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  {hasActions ? <TableHead className="text-right">Actions</TableHead> : null}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.map((user) => {
-                  const eligible = user.accountStatus === "PENDING" &&
-                    (user.activationStatus === "PENDING" || user.activationStatus === "EXPIRED");
+                  const eligible = (user.accountStatus === "PENDING" &&
+                    (user.activationStatus === "PENDING" || user.activationStatus === "EXPIRED")) || user.accountStatus === "ACTIVE";
                   return (
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">{user.fullName}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.role}</TableCell>
-                      <TableCell><StatusBadge status={user.accountStatus} /></TableCell>
+                      <TableCell><StatusBadge status={user.membershipStatus === "DISABLED" ? "SUSPENDED" : user.accountStatus} /></TableCell>
                       <TableCell><StatusBadge status={user.activationStatus} /></TableCell>
                       <TableCell>{dateLabel(user.activationLinkCreatedAt)}</TableCell>
                       <TableCell>{dateLabel(user.activationLinkExpiresAt)}</TableCell>
-                      <TableCell className="text-right">
+                      {hasActions ? <TableCell className="text-right"><div className="flex justify-end gap-1">
+                        {canEditUsers || canChangeRoles || canSuspendUsers ? <Button variant="ghost" size="icon" onClick={() => openEdit(user)} title="Edit user"><Pencil /></Button> : null}
+                        {canActivateUsers ?
                         <Button
-                          variant="outline"
-                          size="sm"
+                          variant="ghost"
+                          size="icon"
                           disabled={!eligible || regenerating || loadingLink}
                           onClick={() => {
                             setActionError(null);
-                            if (user.activationStatus === "PENDING") void viewCurrentLink(user);
+                            if (user.accountStatus === "PENDING" && user.activationStatus === "PENDING") void viewCurrentLink(user);
                             else setConfirmUser(user);
                           }}
-                          title={eligible ? "Regenerate activation link" : "Only pending accounts can receive an activation link"}
+                          title={user.accountStatus === "ACTIVE" ? "Reactivate account and reset 2FA" : eligible ? "Regenerate activation link" : "Only pending or active accounts can receive an activation link"}
                         >
-                          <RotateCw /> Regenerate link
-                        </Button>
-                      </TableCell>
+                          {user.accountStatus === "ACTIVE" ? <RotateCcw /> : <RotateCw />}
+                        </Button> : null}
+                        {canResetPasswords ? <Button variant="ghost" size="icon" disabled={generatingReset || user.accountStatus !== "ACTIVE"} onClick={() => void resetPassword(user)} title="Reset password"><KeyRound /></Button> : null}
+                        {canDeleteUsers ? <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(user)} title="Delete tenant user"><Trash2 className="text-destructive" /></Button> : null}
+                      </div></TableCell> : null}
                     </TableRow>
                   );
                 })}
@@ -237,6 +327,35 @@ export function TenantUsersManagementPanel({ tenantId }: { tenantId: string }) {
           </div>
         </div>
       )}
+
+      <Dialog open={editorOpen} onOpenChange={(open) => { setEditorOpen(open); if (!open) setActionError(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editor ? "Edit User" : "Create User"}</DialogTitle>
+            <p className="text-sm text-muted-foreground">{editor ? "Update this sub-tenant user." : "Creates a pending user and a secure activation link."}</p>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5"><Label htmlFor="managed-first">First name</Label><Input id="managed-first" value={firstName} disabled={Boolean(editor) && !canEditUsers} onChange={(event) => setFirstName(event.target.value)} /></div>
+              <div className="space-y-1.5"><Label htmlFor="managed-last">Last name</Label><Input id="managed-last" value={lastName} disabled={Boolean(editor) && !canEditUsers} onChange={(event) => setLastName(event.target.value)} /></div>
+            </div>
+            <div className="space-y-1.5"><Label htmlFor="managed-email">Email</Label><Input id="managed-email" type="email" value={email} disabled={Boolean(editor) && !canEditUsers} onChange={(event) => setEmail(event.target.value)} /></div>
+            {canChangeRoles ? <div className="space-y-1.5"><Label htmlFor="managed-role">Role</Label><select id="managed-role" className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm" value={role} onChange={(event) => setRole(event.target.value as "ADMIN" | "EDITOR")}><option value="ADMIN">ADMIN</option><option value="EDITOR">EDITOR</option></select></div> : null}
+            {editor && canSuspendUsers && editor.accountStatus !== "PENDING" ? <div className="space-y-1.5"><Label htmlFor="managed-access">Tenant access</Label><select id="managed-access" className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm" value={suspended ? "SUSPENDED" : "ACTIVE"} onChange={(event) => setSuspended(event.target.value === "SUSPENDED")}><option value="ACTIVE">Unsuspend</option><option value="SUSPENDED">Suspend</option></select></div> : null}
+            {actionError ? <p className="text-sm text-destructive">{actionError}</p> : null}
+          </div>
+          <DialogFooter><Button variant="outline" onClick={() => setEditorOpen(false)}>Cancel</Button><Button disabled={creating || updating || !firstName.trim() || !lastName.trim() || !email.trim()} onClick={() => void saveUser()}>{creating || updating ? "Saving…" : editor ? "Save changes" : "Create user"}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(deleteTarget)} onOpenChange={(open) => { if (!open && !deleting) { setDeleteTarget(null); setActionError(null); } }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Delete tenant user?</DialogTitle><p className="text-sm text-muted-foreground">Suspend this user first. Once suspended, deleting permanently removes their access to this sub-tenant and ends its tenant sessions.</p></DialogHeader>
+          {deleteTarget ? <p className="rounded-md border p-3 text-sm">{deleteTarget.fullName} · {deleteTarget.email}</p> : null}
+          {actionError ? <p className="text-sm text-destructive">{actionError}</p> : null}
+          <DialogFooter><Button variant="outline" disabled={deleting} onClick={() => setDeleteTarget(null)}>Cancel</Button><Button variant="destructive" disabled={deleting} onClick={() => void removeUser()}>{deleting ? "Deleting…" : "Delete user"}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={Boolean(confirmUser)} onOpenChange={(open) => { if (!open && !regenerating) { setConfirmUser(null); setActionError(null); } }}>
         <DialogContent>
@@ -285,7 +404,7 @@ export function TenantUsersManagementPanel({ tenantId }: { tenantId: string }) {
           {copied ? <p className="text-sm text-muted-foreground" role="status">Link copied.</p> : null}
           {actionError ? <p className="text-sm text-destructive" role="alert">{actionError}</p> : null}
           <DialogFooter>
-            {!linkResult?.isNew ? (
+            {!linkResult?.isNew && canActivateUsers ? (
               <Button
                 variant="outline"
                 onClick={() => {

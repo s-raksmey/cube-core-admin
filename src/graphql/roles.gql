@@ -1,0 +1,17 @@
+query TenantRolePermissions {
+  tenantRolePermissions {
+    role
+    permissions
+  }
+}
+
+query MainConsoleUserPermissions {
+  tenantUserPermissions
+}
+
+mutation UpdateTenantRolePermissions($input: UpdateTenantRolePermissionsInput!) {
+  updateTenantRolePermissions(input: $input) {
+    role
+    permissions
+  }
+}

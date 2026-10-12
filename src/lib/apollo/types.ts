@@ -49,6 +49,7 @@ export type {
   VerifyRecoveryCodeMutation,
   UserStatus,
   UpdateMainTenantUserInput,
+  MainConsoleUserPermissionsQuery,
 } from "@/lib/apollo/generated/graphql";
 
 /** One row from `mainTenantUsers`. */

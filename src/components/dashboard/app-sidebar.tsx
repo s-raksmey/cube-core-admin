@@ -11,6 +11,7 @@ import {
   ImageIcon,
   LayoutDashboard,
   Settings,
+  ShieldCheck,
   Users,
 } from "lucide-react";
 import {
@@ -38,6 +39,7 @@ const superAdminNav: NavItem[] = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "Tenants", href: "/tenants", icon: Box },
   { title: "Users", href: "/users", icon: Users },
+  { title: "Roles & Permissions", href: "/roles", icon: ShieldCheck },
   { title: "Platform Settings", href: "/settings", icon: Settings },
   { title: "Audit Logs", href: "/audit", icon: Activity },
   { title: "System Health", href: "/health", icon: HeartPulse },

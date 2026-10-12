@@ -118,7 +118,7 @@ export function UserManagementPanel() {
     setFirstName(user.firstName ?? "");
     setLastName(user.lastName ?? "");
     setEmail(user.email);
-    setStatus(user.status === "ACTIVE" ? "ACTIVE" : "INACTIVE");
+    setStatus(user.membershipStatus === "DISABLED" ? "INACTIVE" : "ACTIVE");
     setFormError(null);
     setEditConfirmOpen(false);
   }
@@ -170,9 +170,9 @@ export function UserManagementPanel() {
             lastName,
             email,
             ...(editUser.status === "PENDING" ||
-            status === (editUser.status === "ACTIVE" ? "ACTIVE" : "INACTIVE")
+            status === (editUser.membershipStatus === "DISABLED" ? "INACTIVE" : "ACTIVE")
               ? {}
-              : { status }),
+              : { suspended: status === "INACTIVE" }),
           },
         },
       });
