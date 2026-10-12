@@ -46,6 +46,8 @@ export type TenantType =
   | 'SUB';
 
 export type TenantUserPermission =
+  | 'BRANDING_UPDATE'
+  | 'BRANDING_VIEW'
   | 'USERS_ACTIVATE'
   | 'USERS_CHANGE_ROLE'
   | 'USERS_CREATE'

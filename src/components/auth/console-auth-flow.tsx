@@ -172,15 +172,18 @@ export function ConsoleAuthFlow({
         className="pointer-events-none absolute -right-16 bottom-10 size-80 rounded-full bg-brand-accent/20 blur-3xl"
       />
 
-      <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center px-6 py-5">
+      <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center gap-3 px-6 py-5">
         <Image
           src="/images/cube-logo.webp"
           alt="Cube Core"
           width={280}
           height={72}
-          className="h-16 w-auto object-contain sm:h-20"
+          className="h-12 w-auto object-contain sm:h-14"
           priority
         />
+        <span className="text-sm font-semibold text-foreground sm:text-base">
+          Cube Core
+        </span>
       </header>
 
       <main className="relative z-10 mx-auto grid min-h-[calc(100svh-5.5rem)] w-full max-w-6xl items-center gap-10 px-6 pb-16 pt-6 lg:grid-cols-[1.05fr_0.95fr]">

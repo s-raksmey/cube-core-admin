@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { gql } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import {
   Activity,
   Box,
@@ -29,6 +32,21 @@ import {
 import { Badge } from "@/components/ui/badge";
 import type { AuthUser } from "@/lib/types";
 
+const MAIN_BRANDING = gql`query MainSidebarBranding { mainTenantBranding { managementLogoUrl faviconUrl } }`;
+function mainAssetUrl(path: string) {
+  return `/main-assets/${path.replace(/^\/storage\//, "")}`;
+}
+
+function applyMainFavicon(path: string | null | undefined) {
+  document.querySelector<HTMLLinkElement>("link[data-main-tenant-favicon]")?.remove();
+  if (!path) return;
+  const link = document.createElement("link");
+  link.dataset.mainTenantFavicon = "true";
+  link.rel = "icon";
+  link.href = `${mainAssetUrl(path)}?v=${Date.now()}`;
+  document.head.appendChild(link);
+}
+
 type NavItem = {
   title: string;
   href: string;
@@ -50,7 +68,6 @@ const adminNav: NavItem[] = [
   { title: "Users", href: "/users", icon: Users },
   { title: "Content", href: "/content", icon: FileText },
   { title: "Media", href: "/media", icon: ImageIcon },
-  { title: "Settings", href: "/settings", icon: Settings },
   { title: "Audit Logs", href: "/audit", icon: Activity },
 ];
 
@@ -70,6 +87,15 @@ function navForRole(role: AuthUser["role"]) {
 export function AppSidebar({ user }: { user: AuthUser }) {
   const pathname = usePathname();
   const items = navForRole(user.role);
+  const { data: brandingData, refetch } = useQuery<{ mainTenantBranding: { managementLogoUrl: string | null; faviconUrl: string | null } }>(MAIN_BRANDING, { skip: user.role !== "SUPERADMIN", fetchPolicy: "cache-and-network" });
+  const managementLogoUrl = brandingData?.mainTenantBranding.managementLogoUrl;
+  const faviconUrl = brandingData?.mainTenantBranding.faviconUrl;
+  useEffect(() => { applyMainFavicon(faviconUrl); }, [faviconUrl, pathname]);
+  useEffect(() => {
+    const refresh = () => { void refetch(); };
+    window.addEventListener("main-tenant-branding-updated", refresh);
+    return () => window.removeEventListener("main-tenant-branding-updated", refresh);
+  }, [refetch]);
   const identityLabel =
     user.role === "SUPERADMIN" ? "Main Tenant" : user.tenant.name;
 
@@ -77,7 +103,7 @@ export function AppSidebar({ user }: { user: AuthUser }) {
     <Sidebar collapsible="icon">
       <SidebarHeader className="flex h-14 flex-row items-center border-b border-sidebar-border p-0 px-3">
         <Image
-          src="/images/cube-core-icon.webp"
+          src={managementLogoUrl ? mainAssetUrl(managementLogoUrl) : "/images/cube-core-icon.webp"}
           alt="Cube Core"
           width={32}
           height={32}

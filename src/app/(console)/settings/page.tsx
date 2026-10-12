@@ -1,14 +1,18 @@
 import { PageHeader } from "@/components/dashboard/page-header";
-import { EmptyState } from "@/components/dashboard/empty-state";
+import { MainTenantBrandingPanel } from "@/components/branding/main-tenant-branding-panel";
 
-export default function SettingsPage() {
+export default function PlatformSettingsPage() {
   return (
-    <div>
-      <PageHeader title="Settings" description="Settings module placeholder for this MVP." />
-      <EmptyState
-        title="Settings coming next"
-        description="Role-aware settings screens will land in a later phase."
+    <div className="space-y-4">
+      <PageHeader
+        title="Platform Settings"
+        description="Manage Cube Core’s visual identity and social sharing assets."
+        crumbs={[
+          { label: "Console", href: "/dashboard" },
+          { label: "Platform Settings" },
+        ]}
       />
+      <MainTenantBrandingPanel />
     </div>
   );
 }

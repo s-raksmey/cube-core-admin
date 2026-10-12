@@ -19,7 +19,9 @@ type SessionTokens = {
 };
 
 const refreshesInFlight = new Map<string, Promise<SessionTokens>>();
-const MAX_GRAPHQL_BODY_BYTES = 1_000_000;
+// Branding images are capped at 1,000 KB by the API. GraphQL carries them as
+// Base64, which adds roughly one third to the request size.
+const MAX_GRAPHQL_BODY_BYTES = 1_500_000;
 
 function refreshKey(token: string) {
   return createHash("sha256").update(token).digest("hex");

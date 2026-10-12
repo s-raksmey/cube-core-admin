@@ -25,7 +25,7 @@ import {
   UPDATE_TENANT_ROLE_PERMISSIONS,
 } from "@/lib/apollo/operations";
 
-const permissions = [
+const userPermissions = [
   ["USERS_VIEW", "View users"],
   ["USERS_CREATE", "Create users"],
   ["USERS_EDIT", "Edit users"],
@@ -36,15 +36,23 @@ const permissions = [
   ["USERS_DELETE", "Delete users"],
 ] as const;
 
+const settingsPermissions = [
+  ["BRANDING_VIEW", "View settings"],
+  ["BRANDING_UPDATE", "Edit settings"],
+] as const;
+
+const permissions = [...userPermissions, ...settingsPermissions] as const;
+
 const roles = ["SUPERADMIN", "ADMIN", "EDITOR"] as const;
 
 const allowedEditorPermissions = new Set<Permission>([
   "USERS_VIEW",
   "USERS_EDIT",
+  "BRANDING_VIEW",
 ]);
 
 const editorPermissionsMessage =
-  "Editor can only be granted View users and Edit users.";
+  "Editor can only be granted View users, Edit users, and View settings.";
 
 type Role = (typeof roles)[number];
 type Permission = (typeof permissions)[number][0];
@@ -124,7 +132,7 @@ export function RoleManagementPanel() {
 
     if (enabled) {
       nextPermissions.add(permission);
-      if (permission !== "USERS_VIEW") {
+      if (permission.startsWith("USERS_") && permission !== "USERS_VIEW") {
         nextPermissions.add("USERS_VIEW");
       }
     } else {
@@ -161,7 +169,7 @@ export function RoleManagementPanel() {
     <div className="space-y-5">
       <PageHeader
         title="Roles & Permissions"
-        description="Configure user-management permissions for SuperAdmin, Admin, and Editor. Editor can only use View users and Edit users."
+        description="Configure permissions for Admin and Editor users across every sub-tenant."
         crumbs={[
           {
             label: "Console",
@@ -195,10 +203,7 @@ export function RoleManagementPanel() {
         <CardHeader className="gap-1 border-b px-5 py-4">
           <CardTitle className="text-base">User Management</CardTitle>
 
-          <CardDescription>
-            Control user-management actions for each role. Editor can only use
-            View users and Edit users.
-          </CardDescription>
+          <CardDescription>Control user-management actions for each role.</CardDescription>
         </CardHeader>
 
         <CardContent className="p-0">
@@ -257,6 +262,37 @@ export function RoleManagementPanel() {
         </CardContent>
       </Card>
 
+      <Card className="max-w-5xl overflow-hidden py-0">
+        <CardHeader className="gap-1 border-b px-5 py-4">
+          <CardTitle className="text-base">Sub-tenant Settings</CardTitle>
+          <CardDescription>
+            Control who can view or edit branding and SEO settings. Editors can view settings but cannot edit them.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="p-0">
+          <div className="grid grid-cols-[minmax(220px,1fr)_120px_120px] items-center border-b bg-muted/25 px-6 py-3">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Permission</span>
+            <div className="text-center text-sm font-medium">Admin</div>
+            <div className="text-center text-sm font-medium">Editor</div>
+          </div>
+
+          {settingsPermissions.map(([permission, label]) => (
+            <div key={permission} className="grid min-h-13 grid-cols-[minmax(220px,1fr)_120px_120px] items-center border-b px-6 last:border-b-0 hover:bg-muted/20">
+              <span className="pr-4 text-sm font-medium">{label}</span>
+              {(["ADMIN", "EDITOR"] as const).map((role) => {
+                const enabled = selected[role].has(permission);
+                const blocked = role === "EDITOR" && !allowedEditorPermissions.has(permission);
+                return <div key={role} className="flex justify-center"><PermissionSwitch checked={enabled} disabled={saving} label={label} role={role} onClick={() => {
+                  if (blocked) { setBlockedEditorPermission(label); return; }
+                  setPendingToggle({ role, permission, label, enabled: !enabled });
+                }} /></div>;
+              })}
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
       <Dialog
         open={blockedEditorPermission !== null}
         onOpenChange={(open) => {
@@ -307,7 +343,7 @@ export function RoleManagementPanel() {
                   </span>{" "}
                   role? This change takes effect immediately for current and
                   future sessions with this role.
-                  {pendingToggle.enabled && pendingToggle.permission !== "USERS_VIEW"
+                  {pendingToggle.enabled && pendingToggle.permission.startsWith("USERS_") && pendingToggle.permission !== "USERS_VIEW"
                     ? " View users will also be enabled so this role can open the Users page."
                     : null}
                   {!pendingToggle.enabled && pendingToggle.permission === "USERS_VIEW"
