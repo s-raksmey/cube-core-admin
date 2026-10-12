@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useLazyQuery, useMutation, useQuery } from "@apollo/client/react";
-import { Plus, Search } from "lucide-react";
 import {
   CREATE_MAIN_TENANT_USER,
   CURRENT_USER_QUERY,
@@ -28,11 +27,10 @@ import type {
   MainTenantUsersQuery,
   MainConsoleUserPermissionsQuery,
 } from "@/lib/apollo/types";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { UserManagementDialogs } from "@/components/users/user-management-dialogs";
 import { UserManagementTable } from "@/components/users/user-management-table";
+import { UserListToolbar } from "@/components/users/user-list-toolbar";
 
 type MainUserRow = MainTenantUserRow;
 
@@ -332,29 +330,12 @@ export function UserManagementPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex w-full max-w-md gap-2">
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") applySearch();
-              }}
-              placeholder="Search by name, username, or email"
-              className="pl-9"
-            />
-          </div>
-          <Button type="button" variant="outline" onClick={applySearch}>
-            Search
-          </Button>
-        </div>
-        <Button type="button" onClick={openCreate}>
-          <Plus className="size-4" />
-          Create User
-        </Button>
-      </div>
+      <UserListToolbar
+        searchInput={searchInput}
+        onSearchInputChange={setSearchInput}
+        onSearch={applySearch}
+        onCreate={openCreate}
+      />
 
       {loading && !pageData ? (
         <p className="text-sm text-muted-foreground">Loading users…</p>

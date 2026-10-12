@@ -6,13 +6,10 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import {
   Activity,
   Building2,
-  Plus,
   Shield,
   Users,
 } from "lucide-react";
 import {
-  CREATE_ADMIN_USER,
-  CREATE_SUB_TENANT,
   PLATFORM_DASHBOARD_QUERY,
   SET_SUB_TENANT_STATUS,
 } from "@/lib/apollo/operations";
@@ -23,16 +20,7 @@ import { KpiCard } from "@/components/dashboard/kpi-card";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -45,26 +33,10 @@ import type { AuthUser } from "@/lib/types";
 
 export function SuperAdminDashboard({ user }: { user: AuthUser }) {
   const { data, loading, error, refetch } = useQuery(PLATFORM_DASHBOARD_QUERY);
-  const [createSubTenant, { loading: creatingTenant }] =
-    useMutation(CREATE_SUB_TENANT);
-  const [createAdminUser, { loading: creatingAdmin }] =
-    useMutation(CREATE_ADMIN_USER);
   const [setStatus, { loading: updatingStatus }] =
     useMutation(SET_SUB_TENANT_STATUS);
 
-  const [tenantOpen, setTenantOpen] = useState(false);
-  const [adminOpen, setAdminOpen] = useState(false);
-  const [tenantName, setTenantName] = useState("");
-  const [tenantSlug, setTenantSlug] = useState("");
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminFirstName, setAdminFirstName] = useState("");
-  const [adminLastName, setAdminLastName] = useState("");
-  const [adminTenantId, setAdminTenantId] = useState("");
-  const [adminActivationUrl, setAdminActivationUrl] = useState<string | null>(
-    null,
-  );
   const [search, setSearch] = useState("");
-  const [formError, setFormError] = useState<string | null>(null);
 
   const dashboard = data?.platformDashboard;
   const filteredTenants = useMemo(() => {
@@ -77,49 +49,6 @@ export function SuperAdminDashboard({ user }: { user: AuthUser }) {
     );
   }, [dashboard?.recentSubTenants, search]);
 
-  async function handleCreateTenant() {
-    setFormError(null);
-    try {
-      await createSubTenant({
-        variables: { name: tenantName, slug: tenantSlug },
-      });
-      setTenantOpen(false);
-      setTenantName("");
-      setTenantSlug("");
-      await refetch();
-    } catch (e) {
-      setFormError(e instanceof Error ? e.message : "Failed to create tenant");
-    }
-  }
-
-  async function handleCreateAdmin() {
-    setFormError(null);
-    try {
-      const result = await createAdminUser({
-        variables: {
-          email: adminEmail,
-          firstName: adminFirstName,
-          lastName: adminLastName,
-          tenantId: adminTenantId,
-          role: "ADMIN",
-        },
-      });
-      const payload = (
-        result.data as {
-          createAdminUser?: { activationUrl?: string };
-        } | null
-      )?.createAdminUser;
-      setAdminActivationUrl(payload?.activationUrl ?? null);
-      setAdminEmail("");
-      setAdminFirstName("");
-      setAdminLastName("");
-      setAdminTenantId("");
-      await refetch();
-    } catch (e) {
-      setFormError(e instanceof Error ? e.message : "Failed to create admin");
-    }
-  }
-
   return (
     <div className="space-y-6">
       <PageHeader
@@ -129,121 +58,6 @@ export function SuperAdminDashboard({ user }: { user: AuthUser }) {
           { label: "Console", href: "/dashboard" },
           { label: "Dashboard" },
         ]}
-        actions={
-          <>
-            <Dialog open={tenantOpen} onOpenChange={setTenantOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="size-4" />
-                  Create Sub-tenant
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create Sub-tenant</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="tenant-name">Name</Label>
-                    <Input
-                      id="tenant-name"
-                      value={tenantName}
-                      onChange={(e) => setTenantName(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="tenant-slug">Slug</Label>
-                    <Input
-                      id="tenant-slug"
-                      value={tenantSlug}
-                      onChange={(e) => setTenantSlug(e.target.value)}
-                      placeholder="acme-corp"
-                    />
-                  </div>
-                  {formError ? (
-                    <p className="text-sm text-destructive">{formError}</p>
-                  ) : null}
-                </div>
-                <DialogFooter>
-                  <Button
-                    onClick={handleCreateTenant}
-                    disabled={creatingTenant}
-                  >
-                    Create
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog open={adminOpen} onOpenChange={setAdminOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <Shield className="size-4" />
-                  Add Admin
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create Admin</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="admin-tenant">Sub-tenant ID</Label>
-                    <Input
-                      id="admin-tenant"
-                      value={adminTenantId}
-                      onChange={(e) => setAdminTenantId(e.target.value)}
-                      placeholder="Paste sub-tenant id"
-                    />
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="admin-first-name">First name</Label>
-                      <Input
-                        id="admin-first-name"
-                        value={adminFirstName}
-                        onChange={(e) => setAdminFirstName(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="admin-last-name">Last name</Label>
-                      <Input
-                        id="admin-last-name"
-                        value={adminLastName}
-                        onChange={(e) => setAdminLastName(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="admin-email">Email</Label>
-                    <Input
-                      id="admin-email"
-                      type="email"
-                      value={adminEmail}
-                      onChange={(e) => setAdminEmail(e.target.value)}
-                    />
-                  </div>
-                  {adminActivationUrl ? (
-                    <div className="space-y-1.5">
-                      <Label>Activation link</Label>
-                      <p className="break-all rounded-md bg-muted p-2 text-xs">
-                        {adminActivationUrl}
-                      </p>
-                    </div>
-                  ) : null}
-                  {formError ? (
-                    <p className="text-sm text-destructive">{formError}</p>
-                  ) : null}
-                </div>
-                <DialogFooter>
-                  <Button onClick={handleCreateAdmin} disabled={creatingAdmin}>
-                    Create Admin
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </>
-        }
       />
 
       <section className="overflow-hidden rounded-2xl border border-border bg-card">
