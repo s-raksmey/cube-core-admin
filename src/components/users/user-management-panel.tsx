@@ -11,6 +11,7 @@ import {
   MAIN_TENANT_USER_ACTIVATION_LINK,
   GENERATE_MAIN_TENANT_USER_PASSWORD_RESET,
   MAIN_TENANT_USERS_QUERY,
+  MAIN_CONSOLE_USER_PERMISSIONS_QUERY,
   UPDATE_MAIN_TENANT_USER,
 } from "@/lib/apollo/operations";
 import type {
@@ -25,6 +26,7 @@ import type {
   MainTenantUserActivationLinkQuery,
   MainTenantUserActivationLinkQueryVariables,
   MainTenantUsersQuery,
+  MainConsoleUserPermissionsQuery,
 } from "@/lib/apollo/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,7 +56,12 @@ export function UserManagementPanel() {
     },
   );
   const { data: meData } = useQuery<CurrentUserQuery>(CURRENT_USER_QUERY);
+  const { data: permissionsData } = useQuery<MainConsoleUserPermissionsQuery>(
+    MAIN_CONSOLE_USER_PERMISSIONS_QUERY,
+    { fetchPolicy: "cache-and-network" },
+  );
   const currentUserId = meData?.me?.id ?? null;
+  const canSuspendUsers = permissionsData?.tenantUserPermissions.includes("USERS_SUSPEND") ?? false;
 
   const [createUser, { loading: creating }] = useMutation<
     CreateMainTenantUserMutation,
@@ -169,7 +176,7 @@ export function UserManagementPanel() {
             firstName,
             lastName,
             email,
-            ...(editUser.status === "PENDING" ||
+            ...(editUser.status === "PENDING" || !canSuspendUsers ||
             status === (editUser.membershipStatus === "DISABLED" ? "INACTIVE" : "ACTIVE")
               ? {}
               : { suspended: status === "INACTIVE" }),
@@ -411,6 +418,7 @@ export function UserManagementPanel() {
           activationLinkUnavailable, activationLinkUser, requestActivationRegeneration,
           activationLookupFailed, retryActivationLookup,
           activationResetMode,
+          canSuspendUsers,
         }}
       />
 

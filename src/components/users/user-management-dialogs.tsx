@@ -37,6 +37,7 @@ type UserManagementDialogsProps = {
   email: string; setEmail: Dispatch<SetStateAction<string>>;
   status: "ACTIVE" | "INACTIVE";
   setStatus: Dispatch<SetStateAction<"ACTIVE" | "INACTIVE">>;
+  canSuspendUsers: boolean;
   formError: string | null; setFormError: Dispatch<SetStateAction<string | null>>;
   linkResult: LinkResult | null; setLinkResult: Dispatch<SetStateAction<LinkResult | null>>;
   creating: boolean; updating: boolean; deleting: boolean; resetting: boolean; regenerating: boolean;
@@ -57,7 +58,7 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
     editUser, setEditUser, editConfirmOpen, setEditConfirmOpen,
     deleteTarget, setDeleteTarget, resetTarget, setResetTarget,
     activationTarget, setActivationTarget, firstName, setFirstName,
-    lastName, setLastName, email, setEmail, status, setStatus,
+    lastName, setLastName, email, setEmail, status, setStatus, canSuspendUsers,
     formError, setFormError, linkResult, setLinkResult, creating, updating,
     deleting, resetting, regenerating, requestCreate, requestUpdate,
     confirmCreate, confirmUpdate, handleDelete, confirmResetPassword,
@@ -231,7 +232,7 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="space-y-1.5">
+            {canSuspendUsers ? <div className="space-y-1.5">
               <Label htmlFor="edit-status">Access</Label>
               {editUser?.status === "PENDING" ? (
                 <div className="space-y-1.5">
@@ -256,7 +257,7 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
                   <option value="INACTIVE">Suspend</option>
                 </select>
               )}
-            </div>
+            </div> : null}
             {formError ? (
               <p className="text-sm text-destructive">{formError}</p>
             ) : null}

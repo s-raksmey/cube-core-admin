@@ -38,6 +38,14 @@ const permissions = [
 
 const roles = ["SUPERADMIN", "ADMIN", "EDITOR"] as const;
 
+const allowedEditorPermissions = new Set<Permission>([
+  "USERS_VIEW",
+  "USERS_EDIT",
+]);
+
+const editorPermissionsMessage =
+  "Editor can only be granted View users and Edit users.";
+
 type Role = (typeof roles)[number];
 type Permission = (typeof permissions)[number][0];
 
@@ -80,6 +88,9 @@ export function RoleManagementPanel() {
   );
 
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [blockedEditorPermission, setBlockedEditorPermission] = useState<
+    string | null
+  >(null);
 
   /*
    * Permissions come directly from Apollo.
@@ -150,7 +161,7 @@ export function RoleManagementPanel() {
     <div className="space-y-5">
       <PageHeader
         title="Roles & Permissions"
-        description="Configure Main Console SuperAdmin and sub-tenant Admin and Editor user-management permissions."
+        description="Configure user-management permissions for SuperAdmin, Admin, and Editor. Editor can only use View users and Edit users."
         crumbs={[
           {
             label: "Console",
@@ -185,8 +196,8 @@ export function RoleManagementPanel() {
           <CardTitle className="text-base">User Management</CardTitle>
 
           <CardDescription>
-            Control which user-management actions are available to each
-            role.
+            Control user-management actions for each role. Editor can only use
+            View users and Edit users.
           </CardDescription>
         </CardHeader>
 
@@ -212,7 +223,10 @@ export function RoleManagementPanel() {
               <span className="pr-4 text-sm font-medium">{label}</span>
 
               {roles.map((role) => {
+                const isEditor = role === "EDITOR";
                 const enabled = selected[role].has(permission);
+                const editorPermissionIsBlocked =
+                  isEditor && !allowedEditorPermissions.has(permission);
 
                 return (
                   <div key={role} className="flex items-center justify-center">
@@ -221,14 +235,19 @@ export function RoleManagementPanel() {
                       disabled={saving}
                       label={label}
                       role={role}
-                      onClick={() =>
+                      onClick={() => {
+                        if (editorPermissionIsBlocked) {
+                          setBlockedEditorPermission(label);
+                          return;
+                        }
+
                         setPendingToggle({
                           role,
                           permission,
                           label,
                           enabled: !enabled,
-                        })
-                      }
+                        });
+                      }}
                     />
                   </div>
                 );
@@ -237,6 +256,27 @@ export function RoleManagementPanel() {
           ))}
         </CardContent>
       </Card>
+
+      <Dialog
+        open={blockedEditorPermission !== null}
+        onOpenChange={(open) => {
+          if (!open) setBlockedEditorPermission(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editor permission unavailable</DialogTitle>
+            <DialogDescription className="leading-6">
+              {blockedEditorPermission} cannot be enabled for Editor. {editorPermissionsMessage}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" onClick={() => setBlockedEditorPermission(null)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={pendingToggle !== null}

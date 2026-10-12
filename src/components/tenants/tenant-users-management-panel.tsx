@@ -350,7 +350,7 @@ export function TenantUsersManagementPanel({ tenantId }: { tenantId: string }) {
 
       <Dialog open={Boolean(deleteTarget)} onOpenChange={(open) => { if (!open && !deleting) { setDeleteTarget(null); setActionError(null); } }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Delete tenant user?</DialogTitle><p className="text-sm text-muted-foreground">Suspend this user first. Once suspended, deleting permanently removes their access to this sub-tenant and ends its tenant sessions.</p></DialogHeader>
+          <DialogHeader><DialogTitle>Delete tenant user?</DialogTitle><p className="text-sm text-muted-foreground">Suspend this user first. Once suspended, deleting permanently removes their account, credentials, and sessions from the database.</p></DialogHeader>
           {deleteTarget ? <p className="rounded-md border p-3 text-sm">{deleteTarget.fullName} · {deleteTarget.email}</p> : null}
           {actionError ? <p className="text-sm text-destructive">{actionError}</p> : null}
           <DialogFooter><Button variant="outline" disabled={deleting} onClick={() => setDeleteTarget(null)}>Cancel</Button><Button variant="destructive" disabled={deleting} onClick={() => void removeUser()}>{deleting ? "Deleting…" : "Delete user"}</Button></DialogFooter>
