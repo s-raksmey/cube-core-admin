@@ -14,15 +14,9 @@ import { TenantStatusConfirmDialog } from "@/components/tenants/tenant-status-co
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePaginatedSearch } from "@/hooks/use-paginated-search";
+import { useSubTenants } from "@/hooks/use-sub-tenants";
 import type { TenantDomainPurpose } from "@/lib/apollo/generated/graphql";
-import {
-  CREATE_SUB_TENANT,
-  SET_SUB_TENANT_STATUS,
-  SUB_TENANTS_QUERY,
-  UPDATE_SUB_TENANT,
-} from "@/lib/apollo/operations";
 import type { SubTenantRow } from "@/lib/apollo/types";
-import { useMutation, useQuery } from "@apollo/client/react";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -59,17 +53,20 @@ export function TenantManagementPanel() {
   const [notice, setNotice] = useState<string | null>(null);
   const [copiedTenantId, setCopiedTenantId] = useState<string | null>(null);
 
-  const { data, loading, error, refetch } = useQuery(SUB_TENANTS_QUERY, {
-    variables: { search: search || null, page, pageSize: PAGE_SIZE },
-  });
-  const [createTenant, { loading: creating }] = useMutation(CREATE_SUB_TENANT);
-  const [updateTenant, { loading: updating }] = useMutation(UPDATE_SUB_TENANT);
-  const [setTenantStatus, { loading: updatingStatus }] = useMutation(
-    SET_SUB_TENANT_STATUS,
-  );
-  const result = data?.subTenants;
-  const tenants = result?.items ?? [];
-  const total = result?.total ?? 0;
+  const {
+    result,
+    tenants,
+    total,
+    loading,
+    error,
+    refetch,
+    createTenant,
+    updateTenant,
+    setTenantStatus,
+    creating,
+    updating,
+    updatingStatus,
+  } = useSubTenants({ search, page, pageSize: PAGE_SIZE });
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const editing = formTarget?.mode === "edit" ? formTarget.tenant : null;
   const initialLoading = loading && !result;

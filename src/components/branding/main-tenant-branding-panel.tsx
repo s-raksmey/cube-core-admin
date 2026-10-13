@@ -9,40 +9,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { gql } from "@apollo/client";
-import { useMutation, useQuery } from "@apollo/client/react";
+import { useMainTenantBranding } from "@/hooks/use-main-tenant-branding";
 import { ImageIcon, Monitor, Share2, Trash2, Upload } from "lucide-react";
 import Image from "next/image";
 import { useId, useState } from "react";
 
-const BRANDING = gql`
-  query MainTenantBranding {
-    mainTenantBranding {
-      managementLogoUrl
-      faviconUrl
-      openGraphImageUrl
-    }
-  }
-`;
-const UPDATE = gql`
-  mutation UpdateMainTenantBranding(
-    $asset: BrandingAsset!
-    $fileName: String!
-    $mimeType: String!
-    $contentBase64: String
-  ) {
-    updateMainTenantBranding(
-      asset: $asset
-      fileName: $fileName
-      mimeType: $mimeType
-      contentBase64: $contentBase64
-    ) {
-      managementLogoUrl
-      faviconUrl
-      openGraphImageUrl
-    }
-  }
-`;
 function mainAssetUrl(path: string) {
   return `/main-assets/${path.replace(/^\/storage\//, "")}`;
 }
@@ -202,10 +173,8 @@ function AssetCard({
 }
 
 export function MainTenantBrandingPanel() {
-  const { data, loading, error, refetch } = useQuery<{
-    mainTenantBranding: Branding;
-  }>(BRANDING);
-  const [update, { loading: saving }] = useMutation(UPDATE);
+  const { data, loading, error, refetch, updateBranding: update, saving } =
+    useMainTenantBranding();
   const [changes, setChanges] = useState<Partial<Record<Asset, File | null>>>(
     {},
   );

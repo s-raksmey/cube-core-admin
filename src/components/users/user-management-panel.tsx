@@ -2,13 +2,13 @@
 
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { useConsoleUser } from "@/components/providers/console-user-provider";
-import { useMainTenantUserActions } from "@/hooks/use-main-tenant-user-actions";
-import { useMainUserDialogState } from "@/hooks/use-main-user-dialog-state";
-import { useMainTenantUsers } from "@/hooks/use-main-tenant-users";
 import { UserListToolbar } from "@/components/users/user-list-toolbar";
 import { UserManagementDialogs } from "@/components/users/user-management-dialogs";
 import { UserManagementTable } from "@/components/users/user-management-table";
 import { useMainConsoleUserPermissions } from "@/hooks/use-main-console-user-permissions";
+import { useMainTenantUserActions } from "@/hooks/use-main-tenant-user-actions";
+import { useMainTenantUsers } from "@/hooks/use-main-tenant-users";
+import { useMainUserDialogState } from "@/hooks/use-main-user-dialog-state";
 
 /** Coordinates Main Tenant user-management UI, state, list data, and actions. */
 export function UserManagementPanel() {

@@ -13,9 +13,9 @@ export function createApolloClient() {
 
     defaultOptions: {
       watchQuery: {
-        fetchPolicy: "cache-and-network",
-        nextFetchPolicy: "cache-first",
+        fetchPolicy: "cache-first",
       },
+
       query: {
         fetchPolicy: "network-only",
       },
