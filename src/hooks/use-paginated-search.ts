@@ -9,5 +9,13 @@ export function usePaginatedSearch() {
     setPage(1);
     setSearch(searchInput.trim());
   }
-  return { searchInput, setSearchInput, search, setSearch, page, setPage, applySearch };
+  return {
+    searchInput,
+    setSearchInput,
+    search,
+    setSearch,
+    page,
+    setPage,
+    applySearch,
+  };
 }

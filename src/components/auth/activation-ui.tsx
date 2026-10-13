@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import type { FormEvent, ReactNode } from "react";
+import { PasswordField } from "@/components/auth/password-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PasswordField } from "@/components/auth/password-field";
+import Link from "next/link";
+import type { FormEvent, ReactNode } from "react";
 
 type CenteredCardProps = {
   children: ReactNode;
@@ -75,7 +75,14 @@ export function RecoveryCodesCard({
               <li key={item}>{item}</li>
             ))}
           </ul>
-          <Button type="button" variant="outline" className="w-full" onClick={() => void navigator.clipboard.writeText(recoveryCodes.join("\n"))}>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() =>
+              void navigator.clipboard.writeText(recoveryCodes.join("\n"))
+            }
+          >
             Copy codes
           </Button>
           <Button type="button" className="w-full" onClick={onContinue}>
@@ -116,17 +123,46 @@ export function ActivationCredentialsForm({
     <form className="space-y-4" onSubmit={onSubmit}>
       <div className="space-y-1.5">
         <Label htmlFor="activate-email">Email</Label>
-        <Input id="activate-email" type="email" value={email} readOnly disabled />
+        <Input
+          id="activate-email"
+          type="email"
+          value={email}
+          readOnly
+          disabled
+        />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="activate-username">Username</Label>
-        <Input id="activate-username" value={username} onChange={(event) => onUsernameChange(event.target.value.trim())} autoComplete="username" required autoFocus minLength={2} maxLength={40} pattern="[a-zA-Z0-9._-]+" />
+        <Input
+          id="activate-username"
+          value={username}
+          onChange={(event) => onUsernameChange(event.target.value.trim())}
+          autoComplete="username"
+          required
+          autoFocus
+          minLength={2}
+          maxLength={40}
+          pattern="[a-zA-Z0-9._-]+"
+        />
         <p className="text-xs text-muted-foreground">
-          Letters, numbers, dots, underscores, and hyphens. You can sign in with username or email.
+          Letters, numbers, dots, underscores, and hyphens. You can sign in with
+          username or email.
         </p>
       </div>
-      <PasswordField id="activate-password" label="Password" value={password} onChange={onPasswordChange} autoComplete="new-password" />
-      <PasswordField id="activate-confirm-password" label="Confirm password" value={confirmPassword} onChange={onConfirmPasswordChange} autoComplete="new-password" />
+      <PasswordField
+        id="activate-password"
+        label="Password"
+        value={password}
+        onChange={onPasswordChange}
+        autoComplete="new-password"
+      />
+      <PasswordField
+        id="activate-confirm-password"
+        label="Confirm password"
+        value={confirmPassword}
+        onChange={onConfirmPasswordChange}
+        autoComplete="new-password"
+      />
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Continuing…" : "Continue to 2FA"}
@@ -159,7 +195,11 @@ export function ActivationTotpForm({
       {qrCodeDataUrl ? (
         <div className="flex justify-center rounded-lg border border-border bg-background p-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={qrCodeDataUrl} alt="Authenticator QR code" className="size-48" />
+          <img
+            src={qrCodeDataUrl}
+            alt="Authenticator QR code"
+            className="size-48"
+          />
         </div>
       ) : null}
       {manualEntryKey ? (
@@ -172,7 +212,19 @@ export function ActivationTotpForm({
       ) : null}
       <div className="space-y-1.5">
         <Label htmlFor="activate-totp">6-digit code</Label>
-        <Input id="activate-totp" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => onCodeChange(event.target.value.replace(/\D/g, "").slice(0, 6))} required autoFocus />
+        <Input
+          id="activate-totp"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          pattern="[0-9]{6}"
+          maxLength={6}
+          value={code}
+          onChange={(event) =>
+            onCodeChange(event.target.value.replace(/\D/g, "").slice(0, 6))
+          }
+          required
+          autoFocus
+        />
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <Button type="submit" className="w-full" disabled={loading}>
@@ -181,4 +233,3 @@ export function ActivationTotpForm({
     </form>
   );
 }
-

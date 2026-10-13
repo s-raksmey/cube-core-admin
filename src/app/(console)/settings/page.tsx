@@ -1,5 +1,5 @@
-import { PageHeader } from "@/components/dashboard/page-header";
 import { MainTenantBrandingPanel } from "@/components/branding/main-tenant-branding-panel";
+import { PageHeader } from "@/components/dashboard/page-header";
 
 export default function PlatformSettingsPage() {
   return (

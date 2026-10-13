@@ -1,15 +1,15 @@
-import { createHash } from "node:crypto";
-import { NextResponse } from "next/server";
-import { print } from "graphql";
 import { RefreshSessionDocument } from "@/lib/apollo/generated/graphql";
-import { ADMIN_AUDIENCE, authServerBaseUrl } from "@/lib/auth/console";
 import { isAccessTokenUsable } from "@/lib/auth/access-token";
+import { ADMIN_AUDIENCE, authServerBaseUrl } from "@/lib/auth/console";
 import {
   applyAuthCookies,
   clearAuthCookies,
   readAccessToken,
   readRefreshToken,
 } from "@/lib/auth/cookies";
+import { print } from "graphql";
+import { NextResponse } from "next/server";
+import { createHash } from "node:crypto";
 
 type SessionTokens = {
   accessToken: string | null;
@@ -49,11 +49,7 @@ async function refreshSession(refreshToken: string): Promise<SessionTokens> {
       errors?: { extensions?: { code?: string } }[];
     };
     const session = json.data?.refreshSession;
-    if (
-      refreshResponse.ok &&
-      session?.accessToken &&
-      session.refreshToken
-    ) {
+    if (refreshResponse.ok && session?.accessToken && session.refreshToken) {
       return {
         accessToken: session.accessToken,
         refreshToken: session.refreshToken,
@@ -133,9 +129,13 @@ function hasUnauthenticatedError(body: string, requestBody: string) {
       request.operationName === "CurrentUser" ||
       /\bquery\s+CurrentUser\b/.test(request.query ?? "");
 
-    return isCurrentUserCheck && (payload.errors?.some(
-      (error) => error.extensions?.code === "UNAUTHENTICATED",
-    ) ?? false);
+    return (
+      isCurrentUserCheck &&
+      (payload.errors?.some(
+        (error) => error.extensions?.code === "UNAUTHENTICATED",
+      ) ??
+        false)
+    );
   } catch {
     return false;
   }
@@ -172,10 +172,7 @@ export async function POST(request: Request) {
   const requestUrl = new URL(request.url);
   const origin = request.headers.get("origin");
   const fetchSite = request.headers.get("sec-fetch-site");
-  if (
-    (origin && origin !== requestUrl.origin) ||
-    fetchSite === "cross-site"
-  ) {
+  if ((origin && origin !== requestUrl.origin) || fetchSite === "cross-site") {
     return graphQLError("Cross-origin GraphQL request rejected", 403);
   }
 

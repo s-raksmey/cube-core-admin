@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
 import { AppApolloProvider } from "@/components/providers/apollo-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import type { Metadata } from "next";
+import localFont from "next/font/local";
 import "./globals.css";
 
 const inter = localFont({
@@ -31,10 +31,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full bg-background font-sans text-foreground">
         <AppApolloProvider>
           <TooltipProvider>{children}</TooltipProvider>

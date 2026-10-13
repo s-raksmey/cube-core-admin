@@ -1,8 +1,5 @@
 "use client";
 
-import { Suspense, useEffect, useState, type FormEvent } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ActivationCompleteCard,
   ActivationCredentialsForm,
@@ -10,11 +7,14 @@ import {
   ActivationUnavailableCard,
   RecoveryCodesCard,
 } from "@/components/auth/activation-ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   activateTotp,
   completeActivation,
   validateActivationToken,
 } from "@/lib/auth/upstream-actions";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState, type FormEvent } from "react";
 
 type Step = "credentials" | "totp" | "recovery" | "done";
 
@@ -145,7 +145,9 @@ function ActivateForm() {
   if (validating) {
     return (
       <div className="flex min-h-svh items-center justify-center bg-background px-4">
-        <p className="text-sm text-muted-foreground">Validating activation link…</p>
+        <p className="text-sm text-muted-foreground">
+          Validating activation link…
+        </p>
       </div>
     );
   }
@@ -159,7 +161,12 @@ function ActivateForm() {
   }
 
   if (step === "recovery") {
-    return <RecoveryCodesCard recoveryCodes={recoveryCodes} onContinue={finishActivation} />;
+    return (
+      <RecoveryCodesCard
+        recoveryCodes={recoveryCodes}
+        onContinue={finishActivation}
+      />
+    );
   }
 
   return (

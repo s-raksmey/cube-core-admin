@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
-import { ConsoleAuthCard, type ConsoleAuthChallenge, type ConsoleAuthStep } from "@/components/auth/console-auth-card";
+import {
+  ConsoleAuthCard,
+  type ConsoleAuthChallenge,
+  type ConsoleAuthStep,
+} from "@/components/auth/console-auth-card";
 import { Button } from "@/components/ui/button";
 import {
   loginAdmin,
@@ -13,6 +12,11 @@ import {
   verifyAdminRecoveryCode,
   verifyAdminTotpEnrollment,
 } from "@/lib/auth/session-actions";
+import { ArrowRight } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
 type AuthStep = ConsoleAuthStep;
 type ChallengeState = ConsoleAuthChallenge;
@@ -105,7 +109,10 @@ export function ConsoleAuthFlow({
     setError(null);
 
     try {
-      const input = { challengeToken: challenge.challengeToken, code: nextCode };
+      const input = {
+        challengeToken: challenge.challengeToken,
+        code: nextCode,
+      };
       const result = recovery
         ? await verifyAdminRecoveryCode(input)
         : step === "enroll"
@@ -158,7 +165,9 @@ export function ConsoleAuthFlow({
     : null;
 
   useEffect(() => {
-    document.querySelector<HTMLLinkElement>("link[data-main-tenant-favicon]")?.remove();
+    document
+      .querySelector<HTMLLinkElement>("link[data-main-tenant-favicon]")
+      ?.remove();
     if (!branding?.faviconUrl) return;
     const link = document.createElement("link");
     link.dataset.mainTenantFavicon = "true";
@@ -229,8 +238,17 @@ export function ConsoleAuthFlow({
               onVerifySubmit={onVerifySubmit}
               onEmailChange={setEmail}
               onPasswordChange={setPassword}
-              onCodeChange={(value) => { setError(null); autoSubmitRef.current = false; setCode(value); }}
-              onToggleRecoveryCode={() => { setUseRecoveryCode((value) => !value); setCode(""); setError(null); autoSubmitRef.current = false; }}
+              onCodeChange={(value) => {
+                setError(null);
+                autoSubmitRef.current = false;
+                setCode(value);
+              }}
+              onToggleRecoveryCode={() => {
+                setUseRecoveryCode((value) => !value);
+                setCode("");
+                setError(null);
+                autoSubmitRef.current = false;
+              }}
             />
           )}
         </section>

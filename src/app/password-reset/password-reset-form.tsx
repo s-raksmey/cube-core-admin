@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { PasswordField } from "@/components/auth/password-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PasswordField } from "@/components/auth/password-field";
 import {
   completePasswordReset,
   validatePasswordResetToken,
 } from "@/lib/auth/upstream-actions";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, type FormEvent } from "react";
 
 export function PasswordResetForm() {
   const router = useRouter();
@@ -90,7 +90,9 @@ export function PasswordResetForm() {
             <CardTitle>Reset link unavailable</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-muted-foreground">
-            <p>This password reset link is invalid, expired, or already used.</p>
+            <p>
+              This password reset link is invalid, expired, or already used.
+            </p>
             <Link href="/login" className="text-primary hover:underline">
               Return to sign in
             </Link>

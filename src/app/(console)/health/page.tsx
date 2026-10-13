@@ -1,7 +1,7 @@
-import { Suspense } from "react";
-import { connection } from "next/server";
-import { PageHeader } from "@/components/dashboard/page-header";
 import { EmptyState } from "@/components/dashboard/empty-state";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { connection } from "next/server";
+import { Suspense } from "react";
 
 export default function HealthPage() {
   return (
@@ -18,7 +18,10 @@ async function HealthPageContent() {
 
   return (
     <div>
-      <PageHeader title="System Health" description="Platform health details placeholder." />
+      <PageHeader
+        title="System Health"
+        description="Platform health details placeholder."
+      />
       <EmptyState
         title="Health details coming next"
         description="Dashboard currently reports operational status from GraphQL."

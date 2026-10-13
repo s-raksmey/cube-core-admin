@@ -1,5 +1,5 @@
-import { Suspense } from "react";
 import { PasswordResetForm } from "@/app/password-reset/password-reset-form";
+import { Suspense } from "react";
 
 function PasswordResetFallback() {
   return (

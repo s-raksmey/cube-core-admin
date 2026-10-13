@@ -7,10 +7,7 @@ export default function UsersPage() {
       <PageHeader
         title="User Management"
         description="Manage users authorized to access the Main Console and administer the Main Tenant."
-        crumbs={[
-          { label: "Console", href: "/dashboard" },
-          { label: "Users" },
-        ]}
+        crumbs={[{ label: "Console", href: "/dashboard" }, { label: "Users" }]}
       />
       <UserManagementPanel />
     </div>

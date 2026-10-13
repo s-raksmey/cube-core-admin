@@ -1,6 +1,6 @@
-import { useQuery } from "@apollo/client/react";
 import { MAIN_CONSOLE_USER_PERMISSIONS_QUERY } from "@/lib/apollo/operations";
 import type { MainConsoleUserPermissionsQuery } from "@/lib/apollo/types";
+import { useQuery } from "@apollo/client/react";
 
 /** Loads Main Console user permissions and exposes them as named capabilities. */
 export function useMainConsoleUserPermissions() {

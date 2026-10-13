@@ -1,6 +1,6 @@
-import { Suspense, type ReactNode } from "react";
-import { connection } from "next/server";
 import { ConsoleGate } from "@/components/dashboard/console-gate";
+import { connection } from "next/server";
+import { Suspense, type ReactNode } from "react";
 
 async function ConsoleRoute({ children }: { children: ReactNode }) {
   // The authorization gate is client-side. Mark this layout as request-time
