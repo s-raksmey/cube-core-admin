@@ -18,9 +18,13 @@ function TenantUsersFallback() {
     <div className="space-y-6" aria-busy="true">
       <Skeleton className="h-20 w-full" />
       <Skeleton className="h-10 w-full max-w-xl" />
-      <div className="space-y-2 rounded-xl border border-border p-4">
-        {Array.from({ length: 5 }, (_, index) => (
-          <Skeleton key={index} className="h-11 w-full" />
+
+      <div className="space-y-4 rounded-xl border border-border p-4">
+        {Array.from({ length: 2 }, (_, index) => (
+          <div key={index} className="space-y-2">
+            <Skeleton className="h-4 w-3/4 rounded-md" />
+            <Skeleton className="h-3 w-2/5 rounded-md" />
+          </div>
         ))}
       </div>
     </div>
