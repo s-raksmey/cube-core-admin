@@ -1,4 +1,4 @@
-import type { ManagedTenantUser } from "@/components/tenants/managed-tenant-users-table";
+import type { ManagedTenantUser } from "@/types/tenant-management.types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

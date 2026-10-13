@@ -8,11 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { ManagedSubTenantUsersQuery } from "@/lib/apollo/types";
-import { KeyRound, Pencil, RotateCcw, RotateCw, Trash2 } from "lucide-react";
-
-export type ManagedTenantUser =
-  ManagedSubTenantUsersQuery["subTenantUsers"]["items"][number];
+import type { ManagedTenantUser } from "@/types/tenant-management.types";
+import { KeyRound, Link2, Pencil, RotateCcw, Trash2 } from "lucide-react";
 
 type ManagedTenantUsersTableProps = {
   users: ManagedTenantUser[];
@@ -141,7 +138,7 @@ export function ManagedTenantUsersTable({
                             {user.accountStatus === "ACTIVE" ? (
                               <RotateCcw />
                             ) : (
-                              <RotateCw />
+                              <Link2 />
                             )}
                           </Button>
                         ) : null}

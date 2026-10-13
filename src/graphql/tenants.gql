@@ -160,6 +160,13 @@ query SubTenantUserActivationLink($tenantId: ID!, $userId: ID!) {
   }
 }
 
+query SubTenantUserPasswordResetLink($tenantId: ID!, $userId: ID!) {
+  subTenantUserPasswordResetLink(tenantId: $tenantId, userId: $userId) {
+    resetUrl
+    expiresAt
+  }
+}
+
 mutation RegenerateSubTenantUserActivationLink($tenantId: ID!, $userId: ID!) {
   regenerateSubTenantUserActivationLink(tenantId: $tenantId, userId: $userId) {
     activationUrl

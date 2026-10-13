@@ -14,28 +14,8 @@ import type {
   TenantDomainPurpose,
   TenantDomainStatus,
 } from "@/lib/apollo/generated/graphql";
-import {
-  ACTIVATE_TENANT_DOMAIN,
-  CHECK_TENANT_DOMAIN_VERIFICATION,
-  START_TENANT_DOMAIN_VERIFICATION,
-} from "@/lib/apollo/operations";
-import { useMutation } from "@apollo/client/react";
+import { useTenantDomainVerification } from "@/hooks/use-tenant-domain-verification";
 import { Check, Copy, LoaderCircle, RotateCw } from "lucide-react";
-import { useState } from "react";
-
-type VerificationChallenge = {
-  hostname: string;
-  status: TenantDomainStatus;
-  verifiedAt: string | null;
-  recordName: string | null;
-  recordValue: string | null;
-};
-
-function message(error: unknown) {
-  return error instanceof Error
-    ? error.message
-    : "Unable to update domain status.";
-}
 
 export function TenantDomainSetupDialog({
   tenantId,
@@ -56,82 +36,11 @@ export function TenantDomainSetupDialog({
   onOpenChange: (open: boolean) => void;
   onChanged: () => void;
 }) {
-  const [challenge, setChallenge] = useState<VerificationChallenge | null>(
-    null,
-  );
-  const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [confirmedHttps, setConfirmedHttps] = useState(false);
-  const [start, { loading: starting }] = useMutation(
-    START_TENANT_DOMAIN_VERIFICATION,
-  );
-  const [check, { loading: checking }] = useMutation(
-    CHECK_TENANT_DOMAIN_VERIFICATION,
-  );
-  const [activate, { loading: activating }] = useMutation(
-    ACTIVATE_TENANT_DOMAIN,
-  );
-  const busy = starting || checking || activating;
-
-  async function beginVerification() {
-    setError(null);
-    try {
-      const result = await start({ variables: { tenantId, purpose } });
-      const value = result.data?.startTenantDomainVerification;
-      if (!value) throw new Error("Verification details were not returned.");
-      setChallenge(value);
-      setCopied(false);
-      onChanged();
-    } catch (cause) {
-      setError(message(cause));
-    }
-  }
-
-  async function checkVerification() {
-    setError(null);
-    try {
-      const result = await check({ variables: { tenantId, purpose } });
-      const value = result.data?.checkTenantDomainVerification;
-      if (!value) throw new Error("Verification status was not returned.");
-      if (value.status === "PENDING_VERIFICATION") {
-        setError(
-          "The TXT record was not found yet. DNS changes can take time to propagate.",
-        );
-      } else {
-        setChallenge((current) =>
-          current
-            ? { ...current, status: value.status, verifiedAt: value.verifiedAt }
-            : current,
-        );
-        onChanged();
-      }
-    } catch (cause) {
-      setError(message(cause));
-    }
-  }
-
-  async function markConnected() {
-    setError(null);
-    try {
-      const result = await activate({
-        variables: {
-          tenantId,
-          purpose,
-          confirmHttpsAndRouting: confirmedHttps,
-        },
-      });
-      const value = result.data?.activateTenantDomain;
-      if (!value) throw new Error("Domain status was not returned.");
-      setChallenge((current) =>
-        current
-          ? { ...current, status: value.status, verifiedAt: value.verifiedAt }
-          : current,
-      );
-      onChanged();
-    } catch (cause) {
-      setError(message(cause));
-    }
-  }
+  const {
+    challenge, error, copied, confirmedHttps, busy, starting, checking,
+    activating, beginVerification, checkVerification, markConnected,
+    setError, setCopied, setConfirmedHttps,
+  } = useTenantDomainVerification({ tenantId, purpose, onChanged });
 
   async function copy(value: string) {
     try {

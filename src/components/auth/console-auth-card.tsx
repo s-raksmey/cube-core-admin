@@ -7,14 +7,7 @@ import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 import Image from "next/image";
 import type { FormEvent } from "react";
-
-export type ConsoleAuthStep = "landing" | "password" | "enroll" | "verify";
-export type ConsoleAuthChallenge = {
-  challengeToken: string;
-  nextStep: "TOTP_ENROLL" | "TOTP_VERIFY";
-  qrCodeDataUrl?: string;
-  manualEntryKey?: string;
-};
+import type { ConsoleAuthChallenge, ConsoleAuthStep } from "@/types/auth.types";
 
 type ConsoleAuthCardProps = {
   step: ConsoleAuthStep;

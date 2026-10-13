@@ -4,86 +4,27 @@ import { useMemo, useState } from "react";
 
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PermissionMatrix } from "@/components/roles/permission-matrix";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { RolePermissionDialogs } from "@/components/roles/role-permission-dialogs";
 import { useMainRolePermissions } from "@/hooks/use-main-role-permissions";
+import {
+  EDITOR_ALLOWED_PERMISSIONS,
+  MAIN_PERMISSION_ROLES,
+  MAIN_SETTINGS_PERMISSION_ROWS,
+  MAIN_USER_PERMISSION_ROWS,
+  emptyMainTenantPermissions,
+  mainTenantRoleLabel,
+  type MainTenantPermission,
+  type MainTenantPermissionState,
+  type MainTenantRole,
+  type PendingMainTenantPermissionToggle,
+} from "@/types/role-permission.types";
 
-const userPermissions = [
-  ["USERS_VIEW", "View users"],
-  ["USERS_CREATE", "Create users"],
-  ["USERS_EDIT", "Edit users"],
-  ["USERS_CHANGE_ROLE", "Change user roles"],
-  ["USERS_ACTIVATE", "Activate users"],
-  ["USERS_SUSPEND", "Suspend users"],
-  ["USERS_RESET_PASSWORD", "Reset password"],
-  ["USERS_DELETE", "Delete users"],
-] as const;
-
-const settingsPermissions = [
-  ["BRANDING_VIEW", "View settings"],
-  ["BRANDING_UPDATE", "Edit settings"],
-] as const;
-
-const roles = ["SUPERADMIN", "ADMIN", "EDITOR"] as const;
-
-type Role = (typeof roles)[number];
-
-type UserPermission = (typeof userPermissions)[number][0];
-type SettingsPermission = (typeof settingsPermissions)[number][0];
-
-type Permission = UserPermission | SettingsPermission;
-
-type PermissionState = Record<Role, Set<Permission>>;
-
-type PendingToggle = {
-  role: Role;
-  permission: Permission;
-  label: string;
-  enabled: boolean;
-};
-
-const allowedEditorPermissions = new Set<Permission>([
-  "USERS_VIEW",
-  "USERS_EDIT",
-  "BRANDING_VIEW",
-]);
-
-const editorPermissionsMessage =
-  "Editor can only be granted View users, Edit users, and View settings.";
-
-function emptyPermissions(): PermissionState {
-  return {
-    SUPERADMIN: new Set<Permission>(),
-    ADMIN: new Set<Permission>(),
-    EDITOR: new Set<Permission>(),
-  };
-}
-
-function getRoleLabel(role: Role) {
-  switch (role) {
-    case "SUPERADMIN":
-      return "SuperAdmin";
-
-    case "ADMIN":
-      return "Admin";
-
-    case "EDITOR":
-      return "Editor";
-  }
-}
 
 export function RoleManagementPanel() {
   const { data, loading, error, refetch, updatePermissions, saving } =
     useMainRolePermissions();
 
-  const [pendingToggle, setPendingToggle] = useState<PendingToggle | null>(
+  const [pendingToggle, setPendingToggle] = useState<PendingMainTenantPermissionToggle | null>(
     null,
   );
 
@@ -93,8 +34,8 @@ export function RoleManagementPanel() {
     string | null
   >(null);
 
-  const selected = useMemo<PermissionState>(() => {
-    const next = emptyPermissions();
+  const selected = useMemo<MainTenantPermissionState>(() => {
+    const next = emptyMainTenantPermissions();
 
     if (!data?.tenantRolePermissions) {
       return next;
@@ -106,7 +47,7 @@ export function RoleManagementPanel() {
         role.role === "ADMIN" ||
         role.role === "EDITOR"
       ) {
-        next[role.role] = new Set(role.permissions as Permission[]);
+        next[role.role] = new Set(role.permissions as MainTenantPermission[]);
       }
     }
 
@@ -128,7 +69,7 @@ export function RoleManagementPanel() {
       }
     } else {
       if (permission === "USERS_VIEW") {
-        for (const userPermission of userPermissions) {
+        for (const userPermission of MAIN_USER_PERMISSION_ROWS) {
           nextPermissions.delete(userPermission[0]);
         }
       } else {
@@ -166,10 +107,10 @@ export function RoleManagementPanel() {
     label: string,
     enabled: boolean,
   ) {
-    const role = roleValue as Role;
-    const permission = permissionValue as Permission;
+    const role = roleValue as MainTenantRole;
+    const permission = permissionValue as MainTenantPermission;
 
-    if (role === "EDITOR" && !allowedEditorPermissions.has(permission)) {
+    if (role === "EDITOR" && !EDITOR_ALLOWED_PERMISSIONS.has(permission)) {
       setBlockedEditorPermission(label);
       return;
     }
@@ -183,12 +124,12 @@ export function RoleManagementPanel() {
     });
   }
 
-  const userColumns = roles.map((role) => ({
+  const userColumns = MAIN_PERMISSION_ROLES.map((role) => ({
     key: role,
-    label: getRoleLabel(role),
+    label: mainTenantRoleLabel(role),
   }));
 
-  const userRows = userPermissions.map(([key, label]) => ({
+  const userRows = MAIN_USER_PERMISSION_ROWS.map(([key, label]) => ({
     key,
     label,
   }));
@@ -204,7 +145,7 @@ export function RoleManagementPanel() {
     },
   ] as const;
 
-  const settingsRows = settingsPermissions.map(([key, label]) => ({
+  const settingsRows = MAIN_SETTINGS_PERMISSION_ROWS.map(([key, label]) => ({
     key,
     label,
   }));
@@ -260,7 +201,7 @@ export function RoleManagementPanel() {
             rows={userRows}
             saving={saving}
             isEnabled={(role, permission) =>
-              selected[role as Role].has(permission as Permission)
+              selected[role as MainTenantRole].has(permission as MainTenantPermission)
             }
             onToggle={handleToggle}
           />
@@ -272,105 +213,21 @@ export function RoleManagementPanel() {
             rows={settingsRows}
             saving={saving}
             isEnabled={(role, permission) =>
-              selected[role as Role].has(permission as Permission)
+              selected[role as MainTenantRole].has(permission as MainTenantPermission)
             }
             onToggle={handleToggle}
           />
         </>
       ) : null}
 
-      <Dialog
-        open={blockedEditorPermission !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setBlockedEditorPermission(null);
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Editor permission unavailable</DialogTitle>
-
-            <DialogDescription className="leading-6">
-              {blockedEditorPermission} cannot be enabled for Editor.{" "}
-              {editorPermissionsMessage}
-            </DialogDescription>
-          </DialogHeader>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              onClick={() => setBlockedEditorPermission(null)}
-            >
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={pendingToggle !== null}
-        onOpenChange={(open) => {
-          if (!open && !saving) {
-            setPendingToggle(null);
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {pendingToggle?.enabled
-                ? "Enable permission?"
-                : "Disable permission?"}
-            </DialogTitle>
-
-            <DialogDescription className="leading-6">
-              {pendingToggle ? (
-                <>
-                  {pendingToggle.enabled ? "Enable" : "Disable"}{" "}
-                  <span className="font-medium text-foreground">
-                    {pendingToggle.label}
-                  </span>{" "}
-                  for the{" "}
-                  <span className="font-medium text-foreground">
-                    {getRoleLabel(pendingToggle.role)}
-                  </span>{" "}
-                  role? This change takes effect immediately for current and
-                  future sessions with this role.
-                  {pendingToggle.enabled &&
-                  pendingToggle.permission.startsWith("USERS_") &&
-                  pendingToggle.permission !== "USERS_VIEW"
-                    ? " View users will also be enabled so this role can open the Users page."
-                    : null}
-                  {!pendingToggle.enabled &&
-                  pendingToggle.permission === "USERS_VIEW"
-                    ? " Disabling View users also removes every other user-management permission for this role."
-                    : null}
-                </>
-              ) : null}
-            </DialogDescription>
-          </DialogHeader>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={saving}
-              onClick={() => setPendingToggle(null)}
-            >
-              Cancel
-            </Button>
-
-            <Button
-              type="button"
-              disabled={saving}
-              onClick={() => void confirmToggle()}
-            >
-              {saving ? "Saving…" : "Confirm"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <RolePermissionDialogs
+        blockedPermission={blockedEditorPermission}
+        pendingToggle={pendingToggle}
+        saving={saving}
+        onCloseBlocked={() => setBlockedEditorPermission(null)}
+        onClosePending={() => setPendingToggle(null)}
+        onConfirm={() => void confirmToggle()}
+      />
     </div>
   );
 }

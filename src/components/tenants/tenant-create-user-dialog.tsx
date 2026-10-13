@@ -13,13 +13,7 @@ import { Label } from "@/components/ui/label";
 import type { SubTenantRow } from "@/lib/apollo/types";
 import { Check, Copy } from "lucide-react";
 import { useState, type FormEvent } from "react";
-
-export type TenantUserFormValues = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: "ADMIN" | "EDITOR";
-};
+import type { TenantUserFormValues } from "@/types/tenant-management.types";
 
 export function TenantCreateUserDialog({
   tenant,

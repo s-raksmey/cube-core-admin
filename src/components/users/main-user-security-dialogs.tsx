@@ -184,12 +184,13 @@ export function MainUserSecurityDialogs({
           <DialogHeader>
             <DialogTitle>Reset password?</DialogTitle>
             <DialogDescription>
-              Generate a single-use password reset link for{" "}
+              View the current single-use password reset link for{" "}
               <span className="font-medium text-foreground">
                 {resetTarget?.firstName} {resetTarget?.lastName}
               </span>{" "}
-              ({resetTarget?.email})? Their current password will stop working
-              after they set a new one. 2FA stays enabled.
+              ({resetTarget?.email})? A valid unused link is reused. An expired
+              or used link is replaced and stored for two hours. Their current
+              password will stop working after they set a new one. 2FA stays enabled.
             </DialogDescription>
           </DialogHeader>
           {formError ? (
@@ -212,7 +213,7 @@ export function MainUserSecurityDialogs({
               onClick={() => void confirmResetPassword()}
               disabled={resetting}
             >
-              {resetting ? "Generating…" : "Yes, reset password"}
+              {resetting ? "Loading link…" : "Yes, reset password"}
             </Button>
           </DialogFooter>
         </DialogContent>

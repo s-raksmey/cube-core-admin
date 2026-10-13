@@ -16,3 +16,19 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Keep authorization and tenant scoping enforced by the server regardless of requested fields; omitted fields are not access control.
 - Keep pagination bounded. After SDL/operation changes, run `npm run graphql:codegen` and inspect generated operation types.
 - Follow `cube-core-server/docs/ARCHITECTURE.md` → “GraphQL field selection and data efficiency”.
+
+## Frontend architecture
+
+Use this structure for every new or changed Main Tenant feature:
+
+- `src/app`: routes, layouts, and route-level composition only. Do not place feature data access, mutation handlers, or large UI blocks here.
+- `src/components`: presentational UI and page composition. Components receive data and callbacks through props. A component may query only when it is the session gate that establishes the authenticated console user.
+- `src/hooks`: Apollo queries, mutations, dynamic feature state, permission-aware actions, and browser synchronization such as branding refresh events.
+- `src/types`: shared feature contracts used by more than one component or hook. Keep component-private prop types in their component file.
+- `src/lib`: Apollo infrastructure, pure utilities, and framework integration. Do not put React state or JSX here.
+
+Keep Main Tenant responsibilities limited to platform SuperAdmin work: tenants, Main Tenant users, global role permissions, platform branding, audit, and health. Do not add sub-tenant Admin or Editor behavior to this project.
+
+Before adding a new component, reuse an existing UI primitive, table, dialog, page header, permission hook, or branding hook when it fits. Split a feature when it combines data access, domain actions, and UI; do not create one-use wrapper files that only forward props.
+
+Run `npm run typecheck`, `npm run lint`, and `git diff --check` after frontend changes. Run a production build when a route, Apollo boundary, or framework behavior changes.

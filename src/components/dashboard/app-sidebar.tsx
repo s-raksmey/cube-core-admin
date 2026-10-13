@@ -14,8 +14,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import type { AuthUser } from "@/lib/types";
-import { gql } from "@apollo/client";
-import { useQuery } from "@apollo/client/react";
+import { useMainSidebarBranding } from "@/hooks/use-main-sidebar-branding";
 import {
   Activity,
   Box,
@@ -28,42 +27,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
-
-const MAIN_BRANDING = gql`
-  query MainSidebarBranding {
-    mainTenantBranding {
-      managementLogoUrl
-      faviconUrl
-    }
-  }
-`;
-
-function mainAssetUrl(path: string) {
-  return `/main-assets/${path.replace(/^\/storage\//, "")}`;
-}
-
-function applyMainFavicon(path: string | null | undefined) {
-  const existing = document.querySelector<HTMLLinkElement>(
-    "link[data-main-tenant-favicon]",
-  );
-
-  if (!path) {
-    existing?.remove();
-    return;
-  }
-
-  const link = existing ?? document.createElement("link");
-
-  link.dataset.mainTenantFavicon = "true";
-  link.rel = "icon";
-  // Uploaded assets receive a distinct path, so the path itself is the cache key.
-  link.href = mainAssetUrl(path);
-
-  if (!existing) {
-    document.head.appendChild(link);
-  }
-}
 
 type NavItem = {
   title: string;
@@ -113,36 +76,7 @@ const navigation: NavItem[] = [
 
 export function AppSidebar({ user }: { user: AuthUser }) {
   const pathname = usePathname();
-
-  const { data: brandingData, refetch } = useQuery<{
-    mainTenantBranding: {
-      managementLogoUrl: string | null;
-      faviconUrl: string | null;
-    };
-  }>(MAIN_BRANDING);
-
-  const managementLogoUrl = brandingData?.mainTenantBranding?.managementLogoUrl;
-
-  const faviconUrl = brandingData?.mainTenantBranding?.faviconUrl;
-
-  useEffect(() => {
-    applyMainFavicon(faviconUrl);
-  }, [faviconUrl]);
-
-  useEffect(() => {
-    function refreshBranding() {
-      void refetch();
-    }
-
-    window.addEventListener("main-tenant-branding-updated", refreshBranding);
-
-    return () => {
-      window.removeEventListener(
-        "main-tenant-branding-updated",
-        refreshBranding,
-      );
-    };
-  }, [refetch]);
+  const { managementLogoUrl, mainAssetUrl } = useMainSidebarBranding();
 
   return (
     <Sidebar collapsible="icon">

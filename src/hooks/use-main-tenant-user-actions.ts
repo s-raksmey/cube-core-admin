@@ -8,6 +8,7 @@ import {
   GENERATE_MAIN_TENANT_USER_ACTIVATION,
   GENERATE_MAIN_TENANT_USER_PASSWORD_RESET,
   MAIN_TENANT_USER_ACTIVATION_LINK,
+  MAIN_TENANT_USER_PASSWORD_RESET_LINK,
   UPDATE_MAIN_TENANT_USER,
 } from "@/lib/apollo/operations";
 import type {
@@ -59,6 +60,31 @@ export function useMainTenantUserActions({
     MainTenantUserActivationLinkQuery,
     MainTenantUserActivationLinkQueryVariables
   >(MAIN_TENANT_USER_ACTIVATION_LINK, { fetchPolicy: "no-cache" });
+  const [loadResetLink, { loading: loadingResetLink }] = useLazyQuery(
+    MAIN_TENANT_USER_PASSWORD_RESET_LINK,
+    { fetchPolicy: "no-cache" },
+  );
+
+  async function requestPasswordReset(user: MainTenantUserRow) {
+    dialogs.setFormError(null);
+    try {
+      const result = await loadResetLink({ variables: { userId: user.id } });
+      const link = result.data?.mainTenantUserPasswordResetLink;
+      if (link) {
+        dialogs.setLinkResult({
+          url: link.resetUrl,
+          expiresAt: link.expiresAt,
+          label: `Password reset link for ${user.email}`,
+        });
+      } else {
+        dialogs.setResetTarget(user);
+      }
+    } catch (error) {
+      dialogs.setFormError(
+        messageFor(error, "Could not check password reset link"),
+      );
+    }
+  }
 
   async function confirmCreate() {
     dialogs.setFormError(null);
@@ -80,7 +106,8 @@ export function useMainTenantUserActions({
           label: `Activation link for ${payload.user.email}`,
         });
       }
-      await list.refetch();
+      // Show the newly issued link immediately; list freshness is non-blocking.
+      void list.refetch();
     } catch (error) {
       dialogs.setCreateConfirmOpen(false);
       dialogs.setCreateOpen(true);
@@ -183,7 +210,8 @@ export function useMainTenantUserActions({
         expiresAt: payload.expiresAt,
         label: `Activation link for ${user.email}`,
       });
-      await list.refetch();
+      // Show the newly issued link immediately; list freshness is non-blocking.
+      void list.refetch();
     } catch (error) {
       dialogs.setFormError(
         messageFor(error, "Could not generate activation link"),
@@ -262,6 +290,8 @@ export function useMainTenantUserActions({
     resetting,
     regenerating,
     loadingActivationLink,
+    loadingResetLink,
+    requestPasswordReset,
     confirmCreate,
     confirmUpdate,
     deleteSelectedUser,

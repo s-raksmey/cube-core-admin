@@ -69,7 +69,7 @@ export function UserManagementPanel() {
           currentUserId={currentUser.id}
           busyUserId={dialogs.busyUserId}
           regenerating={actions.regenerating || actions.loadingActivationLink}
-          resetting={actions.resetting}
+          resetting={actions.resetting || actions.loadingResetLink}
           page={list.page}
           totalPages={list.totalPages}
           total={list.total}
@@ -78,10 +78,7 @@ export function UserManagementPanel() {
           onEdit={dialogs.openEdit}
           onGenerateActivation={actions.viewActivationLink}
           onReactivate={actions.requestUserReactivation}
-          onResetPassword={(user) => {
-            dialogs.setFormError(null);
-            dialogs.setResetTarget(user);
-          }}
+          onResetPassword={actions.requestPasswordReset}
           onDelete={(user) => {
             dialogs.setFormError(null);
             dialogs.setDeleteTarget(user);

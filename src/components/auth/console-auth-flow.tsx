@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  ConsoleAuthCard,
-  type ConsoleAuthChallenge,
-  type ConsoleAuthStep,
-} from "@/components/auth/console-auth-card";
+import { ConsoleAuthCard } from "@/components/auth/console-auth-card";
 import { Button } from "@/components/ui/button";
 import {
   loginAdmin,
@@ -17,6 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import type { ConsoleAuthChallenge, ConsoleAuthStep } from "@/types/auth.types";
 
 type AuthStep = ConsoleAuthStep;
 type ChallengeState = ConsoleAuthChallenge;

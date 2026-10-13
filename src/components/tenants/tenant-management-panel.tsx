@@ -5,16 +5,14 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { SearchToolbar } from "@/components/dashboard/search-toolbar";
 import { TenantDetailsDialog } from "@/components/tenants/tenant-details-dialog";
 import { TenantDomainSetupDialog } from "@/components/tenants/tenant-domain-setup-dialog";
-import {
-  TenantFormDialog,
-  type TenantFormValues,
-} from "@/components/tenants/tenant-form-dialog";
+import { TenantFormDialog } from "@/components/tenants/tenant-form-dialog";
 import { TenantListTable } from "@/components/tenants/tenant-list-table";
 import { TenantStatusConfirmDialog } from "@/components/tenants/tenant-status-confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePaginatedSearch } from "@/hooks/use-paginated-search";
 import { useSubTenants } from "@/hooks/use-sub-tenants";
+import type { TenantFormValues } from "@/types/tenant-management.types";
 import type { TenantDomainPurpose } from "@/lib/apollo/generated/graphql";
 import type { SubTenantRow } from "@/lib/apollo/types";
 import { Plus } from "lucide-react";
