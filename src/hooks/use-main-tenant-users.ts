@@ -8,7 +8,11 @@ import { useState } from "react";
 const PAGE_SIZE = 10;
 
 /** Owns Main Tenant user-list querying, search, and pagination. */
-export function useMainTenantUsers({ canViewUsers }: { canViewUsers: boolean }) {
+export function useMainTenantUsers({
+  canViewUsers,
+}: {
+  canViewUsers: boolean;
+}) {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);

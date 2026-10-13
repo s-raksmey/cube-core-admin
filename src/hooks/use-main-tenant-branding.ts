@@ -4,11 +4,31 @@ import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 
 const MAIN_TENANT_BRANDING = gql`
-  query MainTenantBranding { mainTenantBranding { managementLogoUrl faviconUrl openGraphImageUrl } }
+  query MainTenantBranding {
+    mainTenantBranding {
+      managementLogoUrl
+      faviconUrl
+      openGraphImageUrl
+    }
+  }
 `;
 const UPDATE_MAIN_TENANT_BRANDING = gql`
-  mutation UpdateMainTenantBranding($asset: BrandingAsset!, $fileName: String!, $mimeType: String!, $contentBase64: String) {
-    updateMainTenantBranding(asset: $asset, fileName: $fileName, mimeType: $mimeType, contentBase64: $contentBase64) { managementLogoUrl faviconUrl openGraphImageUrl }
+  mutation UpdateMainTenantBranding(
+    $asset: BrandingAsset!
+    $fileName: String!
+    $mimeType: String!
+    $contentBase64: String
+  ) {
+    updateMainTenantBranding(
+      asset: $asset
+      fileName: $fileName
+      mimeType: $mimeType
+      contentBase64: $contentBase64
+    ) {
+      managementLogoUrl
+      faviconUrl
+      openGraphImageUrl
+    }
   }
 `;
 

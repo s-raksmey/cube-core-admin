@@ -1,9 +1,22 @@
 "use client";
 
-import { CREATE_SUB_TENANT, SET_SUB_TENANT_STATUS, SUB_TENANTS_QUERY, UPDATE_SUB_TENANT } from "@/lib/apollo/operations";
+import {
+  CREATE_SUB_TENANT,
+  SET_SUB_TENANT_STATUS,
+  SUB_TENANTS_QUERY,
+  UPDATE_SUB_TENANT,
+} from "@/lib/apollo/operations";
 import { useMutation, useQuery } from "@apollo/client/react";
 
-export function useSubTenants({ search, page, pageSize }: { search: string; page: number; pageSize: number }) {
+export function useSubTenants({
+  search,
+  page,
+  pageSize,
+}: {
+  search: string;
+  page: number;
+  pageSize: number;
+}) {
   const query = useQuery(SUB_TENANTS_QUERY, {
     variables: { search: search || null, page, pageSize },
   });

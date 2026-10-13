@@ -1,5 +1,7 @@
 "use client";
 
+import type { MainTenantUsersList } from "@/hooks/use-main-tenant-users";
+import type { MainUserDialogState } from "@/hooks/use-main-user-dialog-state";
 import {
   CREATE_MAIN_TENANT_USER,
   DELETE_MAIN_TENANT_USER,
@@ -20,8 +22,6 @@ import type {
   MainTenantUserRow,
 } from "@/lib/apollo/types";
 import { useLazyQuery, useMutation } from "@apollo/client/react";
-import type { MainUserDialogState } from "@/hooks/use-main-user-dialog-state";
-import type { MainTenantUsersList } from "@/hooks/use-main-tenant-users";
 
 function messageFor(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
@@ -41,8 +41,12 @@ export function useMainTenantUserActions({
     CreateMainTenantUserMutation,
     CreateMainTenantUserMutationVariables
   >(CREATE_MAIN_TENANT_USER);
-  const [updateUser, { loading: updating }] = useMutation(UPDATE_MAIN_TENANT_USER);
-  const [deleteUser, { loading: deleting }] = useMutation(DELETE_MAIN_TENANT_USER);
+  const [updateUser, { loading: updating }] = useMutation(
+    UPDATE_MAIN_TENANT_USER,
+  );
+  const [deleteUser, { loading: deleting }] = useMutation(
+    DELETE_MAIN_TENANT_USER,
+  );
   const [generateReset, { loading: resetting }] = useMutation<
     GenerateMainTenantUserPasswordResetLinkMutation,
     GenerateMainTenantUserPasswordResetLinkMutationVariables
@@ -163,7 +167,9 @@ export function useMainTenantUserActions({
     dialogs.setBusyUserId(user.id);
     dialogs.setFormError(null);
     try {
-      const result = await generateActivation({ variables: { userId: user.id } });
+      const result = await generateActivation({
+        variables: { userId: user.id },
+      });
       const payload = result.data?.generateMainTenantUserActivationLink;
       if (!payload) {
         dialogs.setFormError("Could not generate activation link");
@@ -179,7 +185,9 @@ export function useMainTenantUserActions({
       });
       await list.refetch();
     } catch (error) {
-      dialogs.setFormError(messageFor(error, "Could not generate activation link"));
+      dialogs.setFormError(
+        messageFor(error, "Could not generate activation link"),
+      );
     } finally {
       dialogs.setBusyUserId(null);
     }
@@ -192,7 +200,9 @@ export function useMainTenantUserActions({
     dialogs.setActivationLinkUnavailable(false);
     dialogs.setActivationLookupFailed(false);
     try {
-      const result = await loadActivationLink({ variables: { userId: user.id } });
+      const result = await loadActivationLink({
+        variables: { userId: user.id },
+      });
       const payload = result.data?.mainTenantUserActivationLink;
       if (payload) {
         dialogs.setActivationLinkUser(user);

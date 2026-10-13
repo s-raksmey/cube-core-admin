@@ -173,8 +173,14 @@ function AssetCard({
 }
 
 export function MainTenantBrandingPanel() {
-  const { data, loading, error, refetch, updateBranding: update, saving } =
-    useMainTenantBranding();
+  const {
+    data,
+    loading,
+    error,
+    refetch,
+    updateBranding: update,
+    saving,
+  } = useMainTenantBranding();
   const [changes, setChanges] = useState<Partial<Record<Asset, File | null>>>(
     {},
   );
