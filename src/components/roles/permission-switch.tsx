@@ -7,7 +7,13 @@ type PermissionSwitchProps = {
 };
 
 /** Accessible, compact permission toggle shared by permission matrices. */
-export function PermissionSwitch({ checked, disabled, label, role, onClick }: PermissionSwitchProps) {
+export function PermissionSwitch({
+  checked,
+  disabled,
+  label,
+  role,
+  onClick,
+}: PermissionSwitchProps) {
   return (
     <button
       type="button"
@@ -23,11 +29,13 @@ export function PermissionSwitch({ checked, disabled, label, role, onClick }: Pe
         checked ? "bg-primary" : "bg-muted-foreground/25",
       ].join(" ")}
     >
-      <span className={[
-        "absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow-xs",
-        "transition-transform duration-150 ease-out",
-        checked ? "translate-x-4" : "translate-x-0",
-      ].join(" ")} />
+      <span
+        className={[
+          "absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow-xs",
+          "transition-transform duration-150 ease-out",
+          checked ? "translate-x-4" : "translate-x-0",
+        ].join(" ")}
+      />
     </button>
   );
 }
