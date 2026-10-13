@@ -2,37 +2,13 @@
 
 import { useState } from "react";
 import { useMutation, useQuery } from "@apollo/client/react";
-import {
-  Check,
-  Copy,
-  Eye,
-  Pencil,
-  Plus,
-  Power,
-  UsersRound,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/page-header";
-import { StatusBadge } from "@/components/dashboard/status-badge";
+import { SearchToolbar } from "@/components/dashboard/search-toolbar";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   CREATE_SUB_TENANT,
   SET_SUB_TENANT_STATUS,
@@ -46,6 +22,9 @@ import {
 } from "@/components/tenants/tenant-form-dialog";
 import { TenantDetailsDialog } from "@/components/tenants/tenant-details-dialog";
 import { TenantDomainSetupDialog } from "@/components/tenants/tenant-domain-setup-dialog";
+import { TenantListTable } from "@/components/tenants/tenant-list-table";
+import { TenantStatusConfirmDialog } from "@/components/tenants/tenant-status-confirm-dialog";
+import { usePaginatedSearch } from "@/hooks/use-paginated-search";
 import type { TenantDomainPurpose } from "@/lib/apollo/generated/graphql";
 
 const PAGE_SIZE = 10;
@@ -55,9 +34,7 @@ function getErrorMessage(error: unknown, fallback: string) {
 }
 
 export function TenantManagementPanel() {
-  const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const { searchInput, setSearchInput, search, setSearch, page, setPage, applySearch } = usePaginatedSearch();
   const [formTarget, setFormTarget] = useState<
     { mode: "create"; tenant: null } | { mode: "edit"; tenant: SubTenantRow } | null
   >(null);
@@ -148,12 +125,6 @@ export function TenantManagementPanel() {
     }
   }
 
-  function applySearch(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPage(1);
-    setSearch(searchInput.trim());
-  }
-
   const pageError = error && !data ? getErrorMessage(error, "Unable to load tenants.") : null;
 
   return (
@@ -170,15 +141,7 @@ export function TenantManagementPanel() {
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <form className="flex w-full gap-2 sm:max-w-xl" onSubmit={applySearch}>
-          <Input
-            aria-label="Search tenants"
-            placeholder="Search by tenant name or slug"
-            value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
-          />
-          <Button type="submit" variant="outline">Search</Button>
-        </form>
+        <SearchToolbar label="Search tenants" placeholder="Search by tenant name or slug" value={searchInput} onValueChange={setSearchInput} onSearch={applySearch} />
         <p className="text-sm text-muted-foreground" aria-live="polite">
           {notice ?? `${total} sub-tenant${total === 1 ? "" : "s"}`}
         </p>
@@ -196,78 +159,19 @@ export function TenantManagementPanel() {
           action={!search ? <Button onClick={() => setFormTarget({ mode: "create", tenant: null })}><Plus /> Create Tenant</Button> : undefined}
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tenant</TableHead>
-                  <TableHead>UUID</TableHead>
-                  <TableHead>Management domain</TableHead>
-                  <TableHead>Public website</TableHead>
-                  <TableHead>Local development</TableHead>
-                  <TableHead>Users</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {tenants.map((tenant) => (
-                  <TableRow key={tenant.id}>
-                    <TableCell>
-                      <div className="font-medium">{tenant.name}</div>
-                      <div className="text-xs text-muted-foreground">{tenant.slug}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex max-w-44 items-center gap-1 font-mono text-xs text-muted-foreground">
-                        <span className="truncate" title={tenant.id}>{tenant.id}</span>
-                        <Button variant="ghost" size="icon-xs" onClick={() => void copyTenantId(tenant)} aria-label={`Copy UUID for ${tenant.name}`}>
-                          {copiedTenantId === tenant.id ? <Check /> : <Copy />}
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>{tenant.managementDomain ?? <span className="text-muted-foreground">—</span>}</div>
-                      <StatusBadge status={tenant.managementDomainStatus ?? "DISABLED"} />
-                    </TableCell>
-                    <TableCell>
-                      <div>{tenant.websiteDomain ?? <span className="text-muted-foreground">—</span>}</div>
-                      <StatusBadge status={tenant.websiteDomainStatus ?? "DISABLED"} />
-                    </TableCell>
-                    <TableCell>{tenant.localDevelopmentHostname ?? <span className="text-muted-foreground">—</span>}</TableCell>
-                    <TableCell>{tenant.userCount}</TableCell>
-                    <TableCell><StatusBadge status={tenant.status} /></TableCell>
-                    <TableCell>{new Date(tenant.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon-sm" aria-label={`View ${tenant.name}`} title="View" onClick={() => { setDetailTenant(tenant); setDetailOpen(true); }}>
-                          <Eye />
-                        </Button>
-                        <Button variant="ghost" size="icon-sm" aria-label={`Edit ${tenant.name}`} title="Edit" onClick={() => { setFormError(null); setFormTarget({ mode: "edit", tenant }); }}>
-                          <Pencil />
-                        </Button>
-                        <Button asChild variant="ghost" size="icon-sm" aria-label={`Manage users in ${tenant.name}`} title="Manage Users">
-                          <Link href={`/tenants/${tenant.id}/users`}><UsersRound /></Link>
-                        </Button>
-                        <Button variant="ghost" size="icon-sm" aria-label={`${tenant.status === "ACTIVE" ? "Disable" : "Enable"} ${tenant.name}`} title={tenant.status === "ACTIVE" ? "Disable" : "Enable"} onClick={() => { setStatusError(null); setStatusTarget(tenant); }}>
-                          <Power />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          <div className="flex flex-col gap-3 border-t border-border px-4 py-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <span>Page {page} of {totalPages} · {total} tenants</span>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={page <= 1 || loading} onClick={() => setPage((current) => current - 1)}>Previous</Button>
-              <Button variant="outline" size="sm" disabled={page >= totalPages || loading} onClick={() => setPage((current) => current + 1)}>Next</Button>
-            </div>
-          </div>
-        </div>
+        <TenantListTable
+          tenants={tenants}
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          loading={loading}
+          copiedTenantId={copiedTenantId}
+          onCopyId={(tenant) => void copyTenantId(tenant)}
+          onView={(tenant) => { setDetailTenant(tenant); setDetailOpen(true); }}
+          onEdit={(tenant) => { setFormError(null); setFormTarget({ mode: "edit", tenant }); }}
+          onStatus={(tenant) => { setStatusError(null); setStatusTarget(tenant); }}
+          onPageChange={setPage}
+        />
       )}
 
       {formTarget ? (
@@ -309,25 +213,7 @@ export function TenantManagementPanel() {
         />
       ) : null}
 
-      <Dialog open={Boolean(statusTarget)} onOpenChange={(open) => { if (!open) setStatusTarget(null); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{statusTarget?.status === "ACTIVE" ? "Disable tenant?" : "Enable tenant?"}</DialogTitle>
-            <p className="text-sm text-muted-foreground">
-              {statusTarget?.status === "ACTIVE"
-                ? `Users in ${statusTarget.name} will no longer be able to sign in.`
-                : `Users in ${statusTarget?.name} will be able to sign in again.`}
-            </p>
-          </DialogHeader>
-          {statusError ? <p className="text-sm text-destructive" role="alert">{statusError}</p> : null}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setStatusTarget(null)} disabled={updatingStatus}>Cancel</Button>
-            <Button variant={statusTarget?.status === "ACTIVE" ? "destructive" : "default"} onClick={() => void confirmStatusChange()} disabled={updatingStatus}>
-              {updatingStatus ? "Saving…" : statusTarget?.status === "ACTIVE" ? "Disable tenant" : "Enable tenant"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <TenantStatusConfirmDialog tenant={statusTarget} loading={updatingStatus} error={statusError} onOpenChange={(open) => { if (!open) setStatusTarget(null); }} onConfirm={() => void confirmStatusChange()} />
     </div>
   );
 }

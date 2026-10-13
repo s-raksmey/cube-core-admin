@@ -4,11 +4,9 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { ConsoleAuthCard, type ConsoleAuthChallenge, type ConsoleAuthStep } from "@/components/auth/console-auth-card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PasswordField } from "@/components/auth/password-field";
 import {
   loginAdmin,
   verifyAdminLoginTotp,
@@ -16,19 +14,18 @@ import {
   verifyAdminTotpEnrollment,
 } from "@/lib/auth/session-actions";
 
-type AuthStep = "landing" | "password" | "enroll" | "verify";
-
-type ChallengeState = {
-  challengeToken: string;
-  nextStep: "TOTP_ENROLL" | "TOTP_VERIFY";
-  qrCodeDataUrl?: string;
-  manualEntryKey?: string;
-};
+type AuthStep = ConsoleAuthStep;
+type ChallengeState = ConsoleAuthChallenge;
 
 type ConsoleAuthFlowProps = {
   initialShowLogin?: boolean;
   dashboardPath?: string;
+  branding?: { managementLogoUrl: string | null; faviconUrl: string | null };
 };
+
+function mainAssetUrl(path: string) {
+  return `/main-assets/${path.replace(/^\/storage\//, "")}`;
+}
 
 function goToDashboard(path: string) {
   // Full navigation so cookies are applied and Apollo cache starts clean.
@@ -49,6 +46,7 @@ function requiresFreshLogin(message: string) {
 export function ConsoleAuthFlow({
   initialShowLogin = false,
   dashboardPath = "/dashboard",
+  branding,
 }: ConsoleAuthFlowProps) {
   const router = useRouter();
   const [step, setStep] = useState<AuthStep>(
@@ -160,6 +158,20 @@ export function ConsoleAuthFlow({
   }, [code, step, useRecoveryCode, loading, challenge]);
 
   const showForm = step !== "landing";
+  const logoUrl = branding?.managementLogoUrl
+    ? mainAssetUrl(branding.managementLogoUrl)
+    : null;
+
+  useEffect(() => {
+    document.querySelector<HTMLLinkElement>("link[data-main-tenant-favicon]")?.remove();
+    if (!branding?.faviconUrl) return;
+    const link = document.createElement("link");
+    link.dataset.mainTenantFavicon = "true";
+    link.rel = "icon";
+    link.href = `${mainAssetUrl(branding.faviconUrl)}?v=${encodeURIComponent(branding.faviconUrl)}`;
+    document.head.appendChild(link);
+    return () => link.remove();
+  }, [branding?.faviconUrl]);
 
   return (
     <div className="relative min-h-svh overflow-hidden bg-background">
@@ -173,14 +185,16 @@ export function ConsoleAuthFlow({
       />
 
       <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center gap-3 px-6 py-5">
-        <Image
-          src="/images/cube-logo.webp"
-          alt="Cube Core"
-          width={280}
-          height={72}
-          className="h-12 w-auto object-contain sm:h-14"
-          priority
-        />
+        {logoUrl ? (
+          <Image
+            src={logoUrl}
+            alt="Cube Core"
+            width={280}
+            height={72}
+            className="h-12 w-auto object-contain sm:h-14"
+            priority
+          />
+        ) : null}
         <span className="text-sm font-semibold text-foreground sm:text-base">
           Cube Core
         </span>
@@ -206,163 +220,23 @@ export function ConsoleAuthFlow({
               </Button>
             </>
           ) : (
-            <div className="max-w-md rounded-2xl border border-border bg-card/95 p-5 shadow-sm backdrop-blur">
-              <div className="mb-4 flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground">
-                    {step === "enroll"
-                      ? "Set up two-factor authentication"
-                      : step === "verify"
-                        ? "Enter verification code"
-                        : "Sign in to Cube Core"}
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {step === "enroll"
-                      ? "Scan the QR code, then enter the 6-digit code from your authenticator."
-                      : step === "verify"
-                        ? "Enter the 6-digit code from your authenticator app."
-                        : "SuperAdmin main console access."}
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={closeLogin}
-                  aria-label="Close form"
-                  disabled={loading}
-                >
-                  <X className="size-4" />
-                </Button>
-              </div>
-
-              {step === "password" ? (
-                <form className="space-y-4" onSubmit={onPasswordSubmit}>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="landing-email">Username or email</Label>
-                    <Input
-                      id="landing-email"
-                      type="text"
-                      autoComplete="username"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      autoFocus
-                      disabled={loading}
-                    />
-                  </div>
-                  <PasswordField
-                    id="landing-password"
-                    value={password}
-                    onChange={setPassword}
-                    disabled={loading}
-                  />
-                  {error ? <p className="text-sm text-destructive">{error}</p> : null}
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Continuing…" : "Continue"}
-                  </Button>
-                </form>
-              ) : null}
-
-              {step === "enroll" ? (
-                <form className="space-y-4" onSubmit={onVerifySubmit}>
-                  {challenge?.qrCodeDataUrl ? (
-                    <div className="flex justify-center rounded-lg border border-border bg-background p-3">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={challenge.qrCodeDataUrl}
-                        alt="Authenticator QR code"
-                        className="size-48"
-                      />
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Preparing authenticator setup…
-                    </p>
-                  )}
-                  {challenge?.manualEntryKey ? (
-                    <div className="space-y-1.5">
-                      <Label>Manual setup key</Label>
-                      <p className="break-all rounded-md bg-muted px-3 py-2 font-mono text-xs tracking-wider">
-                        {challenge.manualEntryKey}
-                      </p>
-                    </div>
-                  ) : null}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="totp-code">6-digit code</Label>
-                    <Input
-                      id="totp-code"
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      pattern="[0-9]{6}"
-                      maxLength={6}
-                      value={code}
-                      onChange={(e) => {
-                        setError(null);
-                        autoSubmitRef.current = false;
-                        setCode(e.target.value.replace(/\D/g, "").slice(0, 6));
-                      }}
-                      required
-                      autoFocus
-                      disabled={loading}
-                    />
-                  </div>
-                  {error ? <p className="text-sm text-destructive">{error}</p> : null}
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Signing you in…" : "Verify and activate 2FA"}
-                  </Button>
-                </form>
-              ) : null}
-
-              {step === "verify" ? (
-                <form className="space-y-4" onSubmit={onVerifySubmit}>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="verify-code">
-                      {useRecoveryCode ? "Recovery code" : "6-digit code"}
-                    </Label>
-                    <Input
-                      id="verify-code"
-                      inputMode={useRecoveryCode ? "text" : "numeric"}
-                      autoComplete="one-time-code"
-                      pattern={useRecoveryCode ? undefined : "[0-9]{6}"}
-                      maxLength={useRecoveryCode ? 64 : 6}
-                      value={code}
-                      onChange={(e) => {
-                        setError(null);
-                        autoSubmitRef.current = false;
-                        setCode(
-                          useRecoveryCode
-                            ? e.target.value.trim().toUpperCase()
-                            : e.target.value.replace(/\D/g, "").slice(0, 6),
-                        );
-                      }}
-                      required
-                      autoFocus
-                      disabled={loading}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="text-sm text-primary hover:underline disabled:opacity-50"
-                    disabled={loading}
-                    onClick={() => {
-                      setUseRecoveryCode((v) => !v);
-                      setCode("");
-                      setError(null);
-                      autoSubmitRef.current = false;
-                    }}
-                  >
-                    {useRecoveryCode
-                      ? "Use authenticator code instead"
-                      : "Use a recovery code"}
-                  </button>
-                  {error ? <p className="text-sm text-destructive">{error}</p> : null}
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Signing you in…" : "Verify and sign in"}
-                  </Button>
-                </form>
-              ) : null}
-            </div>
+            <ConsoleAuthCard
+              step={step}
+              email={email}
+              password={password}
+              code={code}
+              useRecoveryCode={useRecoveryCode}
+              challenge={challenge}
+              error={error}
+              loading={loading}
+              onClose={closeLogin}
+              onPasswordSubmit={onPasswordSubmit}
+              onVerifySubmit={onVerifySubmit}
+              onEmailChange={setEmail}
+              onPasswordChange={setPassword}
+              onCodeChange={(value) => { setError(null); autoSubmitRef.current = false; setCode(value); }}
+              onToggleRecoveryCode={() => { setUseRecoveryCode((value) => !value); setCode(""); setError(null); autoSubmitRef.current = false; }}
+            />
           )}
         </section>
 

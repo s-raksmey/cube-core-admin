@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useLazyQuery, useMutation, useQuery } from "@apollo/client/react";
 import {
   CREATE_MAIN_TENANT_USER,
@@ -10,7 +9,6 @@ import {
   MAIN_TENANT_USER_ACTIVATION_LINK,
   GENERATE_MAIN_TENANT_USER_PASSWORD_RESET,
   MAIN_TENANT_USERS_QUERY,
-  MAIN_CONSOLE_USER_PERMISSIONS_QUERY,
   UPDATE_MAIN_TENANT_USER,
 } from "@/lib/apollo/operations";
 import type {
@@ -25,25 +23,19 @@ import type {
   MainTenantUserActivationLinkQuery,
   MainTenantUserActivationLinkQueryVariables,
   MainTenantUsersQuery,
-  MainConsoleUserPermissionsQuery,
 } from "@/lib/apollo/types";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { UserManagementDialogs } from "@/components/users/user-management-dialogs";
 import { UserManagementTable } from "@/components/users/user-management-table";
 import { UserListToolbar } from "@/components/users/user-list-toolbar";
+import { useMainUserDialogState } from "@/components/users/use-main-user-dialog-state";
+import { useMainConsoleUserPermissions } from "@/hooks/use-main-console-user-permissions";
+import { usePaginatedSearch } from "@/hooks/use-paginated-search";
 
 type MainUserRow = MainTenantUserRow;
 
-type LinkResult = {
-  url: string;
-  expiresAt: string;
-  label: string;
-};
-
 export function UserManagementPanel() {
-  const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const { searchInput, setSearchInput, search, page, setPage, applySearch } = usePaginatedSearch();
   const pageSize = 10;
 
   const { data, loading, error, refetch } = useQuery<MainTenantUsersQuery>(
@@ -54,12 +46,8 @@ export function UserManagementPanel() {
     },
   );
   const { data: meData } = useQuery<CurrentUserQuery>(CURRENT_USER_QUERY);
-  const { data: permissionsData } = useQuery<MainConsoleUserPermissionsQuery>(
-    MAIN_CONSOLE_USER_PERMISSIONS_QUERY,
-    { fetchPolicy: "cache-and-network" },
-  );
+  const { canSuspendUsers } = useMainConsoleUserPermissions();
   const currentUserId = meData?.me?.id ?? null;
-  const canSuspendUsers = permissionsData?.tenantUserPermissions.includes("USERS_SUSPEND") ?? false;
 
   const [createUser, { loading: creating }] = useMutation<
     CreateMainTenantUserMutation,
@@ -80,26 +68,7 @@ export function UserManagementPanel() {
     MainTenantUserActivationLinkQueryVariables
   >(MAIN_TENANT_USER_ACTIVATION_LINK, { fetchPolicy: "no-cache" });
 
-  const [createOpen, setCreateOpen] = useState(false);
-  const [createConfirmOpen, setCreateConfirmOpen] = useState(false);
-  const [editUser, setEditUser] = useState<MainUserRow | null>(null);
-  const [editConfirmOpen, setEditConfirmOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<MainUserRow | null>(null);
-  const [resetTarget, setResetTarget] = useState<MainUserRow | null>(null);
-  const [activationTarget, setActivationTarget] = useState<MainUserRow | null>(
-    null,
-  );
-  const [activationResetMode, setActivationResetMode] = useState(false);
-  const [activationLinkUser, setActivationLinkUser] = useState<MainUserRow | null>(null);
-  const [activationLinkUnavailable, setActivationLinkUnavailable] = useState(false);
-  const [activationLookupFailed, setActivationLookupFailed] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"ACTIVE" | "INACTIVE">("ACTIVE");
-  const [formError, setFormError] = useState<string | null>(null);
-  const [linkResult, setLinkResult] = useState<LinkResult | null>(null);
-  const [busyUserId, setBusyUserId] = useState<string | null>(null);
+  const { createOpen, setCreateOpen, createConfirmOpen, setCreateConfirmOpen, editUser, setEditUser, editConfirmOpen, setEditConfirmOpen, deleteTarget, setDeleteTarget, resetTarget, setResetTarget, activationTarget, setActivationTarget, activationResetMode, setActivationResetMode, activationLinkUser, setActivationLinkUser, activationLinkUnavailable, setActivationLinkUnavailable, activationLookupFailed, setActivationLookupFailed, firstName, setFirstName, lastName, setLastName, email, setEmail, status, setStatus, formError, setFormError, linkResult, setLinkResult, busyUserId, setBusyUserId, openCreate, openEdit, requestCreate, requestUpdate } = useMainUserDialogState();
 
   const pageData = data?.mainTenantUsers;
   const users = pageData?.items ?? [];
@@ -108,36 +77,6 @@ export function UserManagementPanel() {
 
   const canPrev = page > 1;
   const canNext = page < totalPages;
-
-  function openCreate() {
-    setFirstName("");
-    setLastName("");
-    setEmail("");
-    setFormError(null);
-    setCreateConfirmOpen(false);
-    setCreateOpen(true);
-  }
-
-  function openEdit(user: MainUserRow) {
-    setEditUser(user);
-    setFirstName(user.firstName ?? "");
-    setLastName(user.lastName ?? "");
-    setEmail(user.email);
-    setStatus(user.membershipStatus === "DISABLED" ? "INACTIVE" : "ACTIVE");
-    setFormError(null);
-    setEditConfirmOpen(false);
-  }
-
-  function requestCreate() {
-    setFormError(null);
-    setCreateOpen(false);
-    setCreateConfirmOpen(true);
-  }
-
-  function requestUpdate() {
-    setFormError(null);
-    setEditConfirmOpen(true);
-  }
 
   async function confirmCreate() {
     setFormError(null);
@@ -321,11 +260,6 @@ export function UserManagementPanel() {
   async function copyLink() {
     if (!linkResult?.url) return;
     await navigator.clipboard.writeText(linkResult.url);
-  }
-
-  function applySearch() {
-    setPage(1);
-    setSearch(searchInput.trim());
   }
 
   return (

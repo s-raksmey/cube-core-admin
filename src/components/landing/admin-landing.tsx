@@ -1,3 +1,7 @@
+"use client";
+
+import { gql } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { ConsoleAuthFlow } from "@/components/auth/console-auth-flow";
 
 type AdminLandingProps = {
@@ -5,5 +9,9 @@ type AdminLandingProps = {
 };
 
 export function AdminLanding({ initialShowLogin = false }: AdminLandingProps) {
-  return <ConsoleAuthFlow initialShowLogin={initialShowLogin} />;
+  const { data } = useQuery<{ publicMainTenantBranding: { managementLogoUrl: string | null; faviconUrl: string | null } }>(
+    gql`query PublicMainTenantBranding { publicMainTenantBranding { managementLogoUrl faviconUrl } }`,
+    { fetchPolicy: "cache-and-network" },
+  );
+  return <ConsoleAuthFlow initialShowLogin={initialShowLogin} branding={data?.publicMainTenantBranding} />;
 }

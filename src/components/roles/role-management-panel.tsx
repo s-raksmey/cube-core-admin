@@ -4,14 +4,8 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { useMemo, useState } from "react";
 
 import { PageHeader } from "@/components/dashboard/page-header";
+import { PermissionMatrix } from "@/components/roles/permission-matrix";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -73,7 +67,6 @@ function emptyPermissions(): PermissionState {
     EDITOR: new Set<Permission>(),
   };
 }
-
 export function RoleManagementPanel() {
   const { data, loading, error } = useQuery(TENANT_ROLE_PERMISSIONS_QUERY, {
     fetchPolicy: "cache-and-network",
@@ -199,99 +192,37 @@ export function RoleManagementPanel() {
         </div>
       ) : null}
 
-      <Card className="max-w-5xl overflow-hidden py-0">
-        <CardHeader className="gap-1 border-b px-5 py-4">
-          <CardTitle className="text-base">User Management</CardTitle>
+      <PermissionMatrix
+        title="User Management"
+        description="Control user-management actions for each role."
+        columns={roles.map((role) => ({ key: role, label: role === "SUPERADMIN" ? "SuperAdmin" : role === "ADMIN" ? "Admin" : "Editor" }))}
+        rows={permissions.map(([key, label]) => ({ key, label }))}
+        saving={saving}
+        isEnabled={(role, permission) => selected[role as Role].has(permission as Permission)}
+        onToggle={(role, permission, label, enabled) => {
+          if (role === "EDITOR" && !allowedEditorPermissions.has(permission as Permission)) {
+            setBlockedEditorPermission(label);
+            return;
+          }
+          setPendingToggle({ role: role as Role, permission: permission as Permission, label, enabled: !enabled });
+        }}
+      />
 
-          <CardDescription>Control user-management actions for each role.</CardDescription>
-        </CardHeader>
-
-        <CardContent className="p-0">
-          {/* Table header */}
-          <div className="grid grid-cols-[minmax(220px,1fr)_120px_120px_120px] items-center border-b bg-muted/25 px-6 py-3">
-            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Permission
-            </span>
-
-            <div className="text-center text-sm font-medium">SuperAdmin</div>
-            <div className="text-center text-sm font-medium">Admin</div>
-
-            <div className="text-center text-sm font-medium">Editor</div>
-          </div>
-
-          {/* Permission rows */}
-          {permissions.map(([permission, label]) => (
-            <div
-              key={permission}
-              className="grid min-h-13 grid-cols-[minmax(220px,1fr)_120px_120px_120px] items-center border-b px-6 transition-colors last:border-b-0 hover:bg-muted/20"
-            >
-              <span className="pr-4 text-sm font-medium">{label}</span>
-
-              {roles.map((role) => {
-                const isEditor = role === "EDITOR";
-                const enabled = selected[role].has(permission);
-                const editorPermissionIsBlocked =
-                  isEditor && !allowedEditorPermissions.has(permission);
-
-                return (
-                  <div key={role} className="flex items-center justify-center">
-                    <PermissionSwitch
-                      checked={enabled}
-                      disabled={saving}
-                      label={label}
-                      role={role}
-                      onClick={() => {
-                        if (editorPermissionIsBlocked) {
-                          setBlockedEditorPermission(label);
-                          return;
-                        }
-
-                        setPendingToggle({
-                          role,
-                          permission,
-                          label,
-                          enabled: !enabled,
-                        });
-                      }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card className="max-w-5xl overflow-hidden py-0">
-        <CardHeader className="gap-1 border-b px-5 py-4">
-          <CardTitle className="text-base">Sub-tenant Settings</CardTitle>
-          <CardDescription>
-            Control who can view or edit branding and SEO settings. Editors can view settings but cannot edit them.
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="p-0">
-          <div className="grid grid-cols-[minmax(220px,1fr)_120px_120px] items-center border-b bg-muted/25 px-6 py-3">
-            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Permission</span>
-            <div className="text-center text-sm font-medium">Admin</div>
-            <div className="text-center text-sm font-medium">Editor</div>
-          </div>
-
-          {settingsPermissions.map(([permission, label]) => (
-            <div key={permission} className="grid min-h-13 grid-cols-[minmax(220px,1fr)_120px_120px] items-center border-b px-6 last:border-b-0 hover:bg-muted/20">
-              <span className="pr-4 text-sm font-medium">{label}</span>
-              {(["ADMIN", "EDITOR"] as const).map((role) => {
-                const enabled = selected[role].has(permission);
-                const blocked = role === "EDITOR" && !allowedEditorPermissions.has(permission);
-                return <div key={role} className="flex justify-center"><PermissionSwitch checked={enabled} disabled={saving} label={label} role={role} onClick={() => {
-                  if (blocked) { setBlockedEditorPermission(label); return; }
-                  setPendingToggle({ role, permission, label, enabled: !enabled });
-                }} /></div>;
-              })}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      <PermissionMatrix
+        title="Sub-tenant Settings"
+        description="Control who can view or edit branding and SEO settings. Editors can view settings but cannot edit them."
+        columns={[{ key: "ADMIN", label: "Admin" }, { key: "EDITOR", label: "Editor" }]}
+        rows={settingsPermissions.map(([key, label]) => ({ key, label }))}
+        saving={saving}
+        isEnabled={(role, permission) => selected[role as Role].has(permission as Permission)}
+        onToggle={(role, permission, label, enabled) => {
+          if (role === "EDITOR" && !allowedEditorPermissions.has(permission as Permission)) {
+            setBlockedEditorPermission(label);
+            return;
+          }
+          setPendingToggle({ role: role as Role, permission: permission as Permission, label, enabled: !enabled });
+        }}
+      />
 
       <Dialog
         open={blockedEditorPermission !== null}
@@ -375,54 +306,5 @@ export function RoleManagementPanel() {
         </DialogContent>
       </Dialog>
     </div>
-  );
-}
-
-type PermissionSwitchProps = {
-  checked: boolean;
-  disabled: boolean;
-  label: string;
-  role: Role;
-  onClick: () => void;
-};
-
-function PermissionSwitch({
-  checked,
-  disabled,
-  label,
-  role,
-  onClick,
-}: PermissionSwitchProps) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={`${checked ? "Disable" : "Enable"} ${label} for ${role}`}
-      disabled={disabled}
-      onClick={onClick}
-      className={[
-        // 36 × 20 compact switch
-        "relative h-5 w-9 shrink-0 rounded-full",
-        "transition-colors duration-150",
-        "focus-visible:outline-none",
-        "focus-visible:ring-2",
-        "focus-visible:ring-ring/40",
-        "focus-visible:ring-offset-2",
-        "disabled:cursor-not-allowed",
-        "disabled:opacity-50",
-        checked ? "bg-primary" : "bg-muted-foreground/25",
-      ].join(" ")}
-    >
-      <span
-        className={[
-          // 16 × 16 thumb
-          "absolute left-0.5 top-0.5 size-4",
-          "rounded-full bg-white shadow-xs",
-          "transition-transform duration-150 ease-out",
-          checked ? "translate-x-4" : "translate-x-0",
-        ].join(" ")}
-      />
-    </button>
   );
 }

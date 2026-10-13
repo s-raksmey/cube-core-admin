@@ -102,13 +102,15 @@ export function AppSidebar({ user }: { user: AuthUser }) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="flex h-14 flex-row items-center border-b border-sidebar-border p-0 px-3">
-        <Image
-          src={managementLogoUrl ? mainAssetUrl(managementLogoUrl) : "/images/cube-core-icon.webp"}
-          alt="Cube Core"
-          width={32}
-          height={32}
-          className="size-8 object-contain"
-        />
+        {managementLogoUrl ? (
+          <Image
+            src={mainAssetUrl(managementLogoUrl)}
+            alt="Cube Core"
+            width={32}
+            height={32}
+            className="size-8 object-contain"
+          />
+        ) : null}
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

@@ -11,9 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MainTenantUserFields } from "@/components/users/main-tenant-user-fields";
 import { MainUserSecurityDialogs } from "@/components/users/main-user-security-dialogs";
+import { MainTenantUserDeleteDialog } from "@/components/users/main-tenant-user-delete-dialog";
 
 type LinkResult = { url: string; expiresAt: string; label: string };
 type User = MainTenantUserRow;
@@ -81,34 +82,7 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="create-first-name">First name</Label>
-                <Input
-                  id="create-first-name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  autoFocus
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="create-last-name">Last name</Label>
-                <Input
-                  id="create-last-name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="create-email">Email</Label>
-              <Input
-                id="create-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
+            <MainTenantUserFields idPrefix="create" firstName={firstName} lastName={lastName} email={email} onFirstNameChange={setFirstName} onLastNameChange={setLastName} onEmailChange={setEmail} autoFocus />
             <div className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
               Role: <span className="font-medium text-foreground">SUPERADMIN</span>
             </div>
@@ -200,33 +174,7 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-first-name">First name</Label>
-                <Input
-                  id="edit-first-name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-last-name">Last name</Label>
-                <Input
-                  id="edit-last-name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-email">Email</Label>
-              <Input
-                id="edit-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
+            <MainTenantUserFields idPrefix="edit" firstName={firstName} lastName={lastName} email={email} onFirstNameChange={setFirstName} onLastNameChange={setLastName} onEmailChange={setEmail} />
             {canSuspendUsers ? <div className="space-y-1.5">
               <Label htmlFor="edit-status">Access</Label>
               {editUser?.status === "PENDING" ? (
@@ -328,47 +276,15 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={!!deleteTarget}
+      <MainTenantUserDeleteDialog
+        user={deleteTarget}
+        error={formError}
+        loading={deleting}
         onOpenChange={(open) => {
           if (!open) setDeleteTarget(null);
         }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete user?</DialogTitle>
-            <DialogDescription>
-              Suspend{" "}
-              <span className="font-medium text-foreground">
-                {deleteTarget?.firstName} {deleteTarget?.lastName}
-              </span>{" "}
-              ({deleteTarget?.email}) first. Once suspended, deleting permanently
-              removes their Main Tenant account and all sessions. The last active
-              SuperAdmin cannot be suspended.
-            </DialogDescription>
-          </DialogHeader>
-          {formError ? (
-            <p className="text-sm text-destructive">{formError}</p>
-          ) : null}
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setDeleteTarget(null)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={deleting}
-            >
-              {deleting ? "Deleting…" : "Delete user"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onConfirm={() => void handleDelete()}
+      />
 
       <MainUserSecurityDialogs
         activationTarget={activationTarget}
