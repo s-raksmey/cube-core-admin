@@ -12,7 +12,6 @@ export {
   GenerateMainTenantUserActivationLinkDocument as GENERATE_MAIN_TENANT_USER_ACTIVATION,
   MainTenantUserActivationLinkDocument as MAIN_TENANT_USER_ACTIVATION_LINK,
   PlatformDashboardDocument as PLATFORM_DASHBOARD_QUERY,
-  TenantDashboardDocument as TENANT_DASHBOARD_QUERY,
   SubTenantsDocument as SUB_TENANTS_QUERY,
   CreateSubTenantDocument as CREATE_SUB_TENANT,
   UpdateSubTenantDocument as UPDATE_SUB_TENANT,

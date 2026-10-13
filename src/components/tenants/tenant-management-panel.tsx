@@ -72,6 +72,7 @@ export function TenantManagementPanel() {
   const total = result?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const editing = formTarget?.mode === "edit" ? formTarget.tenant : null;
+  const initialLoading = loading && !result;
 
   async function submitTenant(values: TenantFormValues) {
     setFormError(null);
@@ -145,7 +146,7 @@ export function TenantManagementPanel() {
   }
 
   const pageError =
-    error && !data ? getErrorMessage(error, "Unable to load tenants.") : null;
+    error && !result ? getErrorMessage(error, "Unable to load tenants.") : null;
 
   return (
     <div className="space-y-6">
@@ -186,7 +187,12 @@ export function TenantManagementPanel() {
           {pageError}
         </p>
       ) : null}
-      {loading && tenants.length === 0 ? (
+      {error && result ? (
+        <p className="text-sm text-destructive" role="status">
+          Could not refresh tenants. Showing the most recent data.
+        </p>
+      ) : null}
+      {initialLoading ? (
         <div
           className="space-y-2 rounded-xl border border-border p-4"
           aria-label="Loading tenants"

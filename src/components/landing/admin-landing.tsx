@@ -11,7 +11,6 @@ type AdminLandingProps = {
 export function AdminLanding({ initialShowLogin = false }: AdminLandingProps) {
   const { data } = useQuery<{ publicMainTenantBranding: { managementLogoUrl: string | null; faviconUrl: string | null } }>(
     gql`query PublicMainTenantBranding { publicMainTenantBranding { managementLogoUrl faviconUrl } }`,
-    { fetchPolicy: "cache-and-network" },
   );
   return <ConsoleAuthFlow initialShowLogin={initialShowLogin} branding={data?.publicMainTenantBranding} />;
 }

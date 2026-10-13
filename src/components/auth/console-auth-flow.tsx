@@ -27,11 +27,6 @@ function mainAssetUrl(path: string) {
   return `/main-assets/${path.replace(/^\/storage\//, "")}`;
 }
 
-function goToDashboard(path: string) {
-  // Full navigation so cookies are applied and Apollo cache starts clean.
-  window.location.assign(path);
-}
-
 function apolloErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error && error.message) return error.message;
   return fallback;
@@ -130,7 +125,7 @@ export function ConsoleAuthFlow({
         return;
       }
 
-      goToDashboard(dashboardPath);
+      router.replace(dashboardPath);
     } catch (err) {
       setError(apolloErrorMessage(err, "Could not verify the code"));
       setLoading(false);

@@ -6,8 +6,6 @@ const graphqlServerUrl = new URL(
 const storageServerUrl = graphqlServerUrl.toString().replace(/\/graphql\/?$/, "");
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
-  partialPrefetching: true,
   images: {
     remotePatterns: [
       {

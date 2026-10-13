@@ -6,7 +6,6 @@ import type { MainConsoleUserPermissionsQuery } from "@/lib/apollo/types";
 export function useMainConsoleUserPermissions() {
   const query = useQuery<MainConsoleUserPermissionsQuery>(
     MAIN_CONSOLE_USER_PERMISSIONS_QUERY,
-    { fetchPolicy: "cache-and-network" },
   );
   const permissions = new Set(query.data?.tenantUserPermissions ?? []);
   return {

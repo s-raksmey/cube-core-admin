@@ -1,6 +1,7 @@
 "use client";
 
 import { EmptyState } from "@/components/dashboard/empty-state";
+import { useConsoleUser } from "@/components/dashboard/console-user-context";
 import { useMainUserDialogState } from "@/components/users/use-main-user-dialog-state";
 import { UserListToolbar } from "@/components/users/user-list-toolbar";
 import { UserManagementDialogs } from "@/components/users/user-management-dialogs";
@@ -9,7 +10,6 @@ import { useMainConsoleUserPermissions } from "@/hooks/use-main-console-user-per
 import { usePaginatedSearch } from "@/hooks/use-paginated-search";
 import {
   CREATE_MAIN_TENANT_USER,
-  CURRENT_USER_QUERY,
   DELETE_MAIN_TENANT_USER,
   GENERATE_MAIN_TENANT_USER_ACTIVATION,
   GENERATE_MAIN_TENANT_USER_PASSWORD_RESET,
@@ -20,7 +20,6 @@ import {
 import type {
   CreateMainTenantUserMutation,
   CreateMainTenantUserMutationVariables,
-  CurrentUserQuery,
   GenerateMainTenantUserActivationLinkMutation,
   GenerateMainTenantUserActivationLinkMutationVariables,
   GenerateMainTenantUserPasswordResetLinkMutation,
@@ -49,9 +48,9 @@ export function UserManagementPanel() {
       },
     },
   );
-  const { data: meData } = useQuery<CurrentUserQuery>(CURRENT_USER_QUERY);
+  const currentUser = useConsoleUser();
   const { canSuspendUsers } = useMainConsoleUserPermissions();
-  const currentUserId = meData?.me?.id ?? null;
+  const currentUserId = currentUser.id;
 
   const [createUser, { loading: creating }] = useMutation<
     CreateMainTenantUserMutation,
@@ -123,6 +122,9 @@ export function UserManagementPanel() {
   const users = pageData?.items ?? [];
   const total = pageData?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const initialLoading = loading && !pageData;
+  const blockingError = error && !pageData;
+  const refreshError = error && !!pageData;
 
   const canPrev = page > 1;
   const canNext = page < totalPages;
@@ -190,6 +192,12 @@ export function UserManagementPanel() {
     try {
       await deleteUser({ variables: { id: deleteTarget.id } });
       setDeleteTarget(null);
+
+      if (users.length === 1 && page > 1) {
+        setPage(page - 1);
+        return;
+      }
+
       await refetch();
     } catch (err) {
       setFormError(
@@ -248,7 +256,7 @@ export function UserManagementPanel() {
         expiresAt: payload.expiresAt,
         label: `Activation link for ${user.email}`,
       });
-      void refetch().catch(() => undefined);
+      await refetch();
     } catch (err) {
       setFormError(
         err instanceof Error
@@ -332,17 +340,23 @@ export function UserManagementPanel() {
         onCreate={openCreate}
       />
 
-      {loading && !pageData ? (
+      {initialLoading ? (
         <p className="text-sm text-muted-foreground">Loading users…</p>
       ) : null}
 
-      {error ? (
+      {blockingError ? (
         <p className="text-sm text-destructive">
           Unable to load users. SuperAdmin access is required.
         </p>
       ) : null}
 
-      {!loading && !error && users.length === 0 ? (
+      {refreshError ? (
+        <p className="text-sm text-destructive" role="status">
+          Could not refresh the user list. Showing the most recent data.
+        </p>
+      ) : null}
+
+      {!initialLoading && !blockingError && users.length === 0 ? (
         <EmptyState
           title="No users found"
           description={

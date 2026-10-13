@@ -38,7 +38,9 @@ export function ActivityFeed({
               key={item.id}
               className="rounded-lg border border-border bg-card px-3 py-2"
             >
-              <p className="text-sm font-medium text-foreground">{item.action}</p>
+              <p className="text-sm font-medium text-foreground">
+                {item.action}
+              </p>
               <p className="text-xs text-muted-foreground">
                 {[item.actorEmail, item.targetTenantName]
                   .filter(Boolean)

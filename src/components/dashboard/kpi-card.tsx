@@ -10,7 +10,13 @@ type KpiCardProps = {
   loading?: boolean;
 };
 
-export function KpiCard({ title, value, hint, icon: Icon, loading }: KpiCardProps) {
+export function KpiCard({
+  title,
+  value,
+  hint,
+  icon: Icon,
+  loading,
+}: KpiCardProps) {
   return (
     <Card className="border-border shadow-none">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
