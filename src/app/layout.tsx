@@ -1,7 +1,10 @@
 import { AppApolloProvider } from "@/components/providers/apollo-provider";
+import { MainTenantDocumentTitleGuard } from "@/components/branding/main-tenant-document-title-guard";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { mainTenantDocumentTitleStorageKey } from "@/lib/main-tenant-document-title";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import Script from "next/script";
 import "./globals.css";
 
 const inter = localFont({
@@ -22,7 +25,6 @@ const inter = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Cube Core Admin",
   description: "Cube Core management console",
   referrer: "no-referrer",
 };
@@ -33,6 +35,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full bg-background font-sans text-foreground">
+        <Script id="main-tenant-title" strategy="beforeInteractive">
+          {`try { const tenantName = localStorage.getItem("${mainTenantDocumentTitleStorageKey}"); if (tenantName) document.title = tenantName; } catch {}`}
+        </Script>
+        <MainTenantDocumentTitleGuard />
         <AppApolloProvider>
           <TooltipProvider>{children}</TooltipProvider>
         </AppApolloProvider>

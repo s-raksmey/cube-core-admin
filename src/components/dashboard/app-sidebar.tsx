@@ -127,7 +127,13 @@ export function AppSidebar({ user }: { user: AuthUser }) {
                       tooltip={item.title}
                       className="text-sidebar-foreground hover:text-sidebar-accent-foreground data-active:text-sidebar-accent-foreground"
                     >
-                      <Link href={item.href} className="no-underline">
+                      <Link
+                        href={item.href}
+                        className="no-underline"
+                        onClick={() => {
+                          document.title = user.tenant.name;
+                        }}
+                      >
                         <item.icon />
 
                         <span>{item.title}</span>
