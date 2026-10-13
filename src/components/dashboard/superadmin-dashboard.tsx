@@ -16,69 +16,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  PLATFORM_DASHBOARD_QUERY,
-  SET_SUB_TENANT_STATUS,
-} from "@/lib/apollo/operations";
+import { usePlatformDashboard } from "@/hooks/use-platform-dashboard";
 import type { AuthUser } from "@/lib/types";
-import { useMutation, useQuery } from "@apollo/client/react";
 import { Activity, Building2, Shield, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
 
 export function SuperAdminDashboard({ user }: { user: AuthUser }) {
-  const { data, loading, error, refetch } = useQuery(PLATFORM_DASHBOARD_QUERY);
-
-  const [setStatus, { loading: updatingStatus }] = useMutation(
-    SET_SUB_TENANT_STATUS,
-  );
-
-  const [search, setSearch] = useState("");
-  const [statusError, setStatusError] = useState<string | null>(null);
-
-  const dashboard = data?.platformDashboard;
-
-  // Skeleton/loading UI only on the initial request.
-  // Existing dashboard data remains visible during refetch.
-  const initialLoading = loading && !dashboard;
-
-  const filteredTenants = useMemo(() => {
-    const tenants = dashboard?.recentSubTenants ?? [];
-
-    const query = search.trim().toLowerCase();
-
-    if (!query) {
-      return tenants;
-    }
-
-    return tenants.filter(
-      (tenant) =>
-        tenant.name.toLowerCase().includes(query) ||
-        tenant.slug.toLowerCase().includes(query),
-    );
-  }, [dashboard?.recentSubTenants, search]);
-
-  async function toggleTenantStatus(tenantId: string, currentStatus: string) {
-    setStatusError(null);
-
-    try {
-      await setStatus({
-        variables: {
-          tenantId,
-          status: currentStatus === "ACTIVE" ? "SUSPENDED" : "ACTIVE",
-        },
-      });
-
-      await refetch();
-    } catch (reason) {
-      setStatusError(
-        reason instanceof Error
-          ? reason.message
-          : "Unable to update tenant status.",
-      );
-    }
-  }
+  const {
+    dashboard,
+    error,
+    refetch,
+    search,
+    setSearch,
+    filteredTenants,
+    statusError,
+    updatingStatus,
+    initialLoading,
+    toggleTenantStatus,
+  } = usePlatformDashboard();
 
   return (
     <div className="space-y-6">

@@ -13,8 +13,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { MainTenantUserRow } from "@/lib/apollo/types";
+import type { MainUserLinkResult } from "@/types/main-tenant-user.types";
 
-type LinkResult = { url: string; expiresAt: string; label: string };
 type User = MainTenantUserRow;
 
 type MainUserSecurityDialogsProps = {
@@ -28,8 +28,8 @@ type MainUserSecurityDialogsProps = {
   retryActivationLookup: () => void;
   resetTarget: User | null;
   setResetTarget: Dispatch<SetStateAction<User | null>>;
-  linkResult: LinkResult | null;
-  setLinkResult: Dispatch<SetStateAction<LinkResult | null>>;
+  linkResult: MainUserLinkResult | null;
+  setLinkResult: Dispatch<SetStateAction<MainUserLinkResult | null>>;
   formError: string | null;
   setFormError: Dispatch<SetStateAction<string | null>>;
   resetting: boolean;

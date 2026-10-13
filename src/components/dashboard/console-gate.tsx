@@ -1,7 +1,7 @@
 "use client";
 
 import { ConsoleShell } from "@/components/dashboard/console-shell";
-import { ConsoleUserProvider } from "@/components/dashboard/console-user-context";
+import { ConsoleUserProvider } from "@/components/providers/console-user-provider";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CURRENT_USER_QUERY } from "@/lib/apollo/operations";

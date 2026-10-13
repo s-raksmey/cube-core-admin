@@ -1,13 +1,8 @@
 "use client";
 
 import type { MainTenantUserRow } from "@/lib/apollo/types";
+import type { MainUserLinkResult } from "@/types/main-tenant-user.types";
 import { useState } from "react";
-
-export type MainUserLinkResult = {
-  url: string;
-  expiresAt: string;
-  label: string;
-};
 
 /** Groups dialog and form state for the Main Tenant user-management workflow. */
 export function useMainUserDialogState() {
@@ -105,3 +100,5 @@ export function useMainUserDialogState() {
     requestUpdate,
   };
 }
+
+export type MainUserDialogState = ReturnType<typeof useMainUserDialogState>;

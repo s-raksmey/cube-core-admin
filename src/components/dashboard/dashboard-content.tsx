@@ -1,6 +1,6 @@
 "use client";
 
-import { useConsoleUser } from "@/components/dashboard/console-user-context";
+import { useConsoleUser } from "@/components/providers/console-user-provider";
 import { SuperAdminDashboard } from "@/components/dashboard/superadmin-dashboard";
 
 export function DashboardContent() {

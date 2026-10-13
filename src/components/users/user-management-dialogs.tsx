@@ -14,9 +14,9 @@ import { MainTenantUserDeleteDialog } from "@/components/users/main-tenant-user-
 import { MainTenantUserFields } from "@/components/users/main-tenant-user-fields";
 import { MainUserSecurityDialogs } from "@/components/users/main-user-security-dialogs";
 import type { MainTenantUserRow } from "@/lib/apollo/types";
+import type { MainUserLinkResult } from "@/types/main-tenant-user.types";
 import type { Dispatch, SetStateAction } from "react";
 
-type LinkResult = { url: string; expiresAt: string; label: string };
 type User = MainTenantUserRow;
 
 type UserManagementDialogsProps = {
@@ -51,8 +51,8 @@ type UserManagementDialogsProps = {
   canSuspendUsers: boolean;
   formError: string | null;
   setFormError: Dispatch<SetStateAction<string | null>>;
-  linkResult: LinkResult | null;
-  setLinkResult: Dispatch<SetStateAction<LinkResult | null>>;
+  linkResult: MainUserLinkResult | null;
+  setLinkResult: Dispatch<SetStateAction<MainUserLinkResult | null>>;
   creating: boolean;
   updating: boolean;
   deleting: boolean;

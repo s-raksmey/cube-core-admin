@@ -1,6 +1,5 @@
 "use client";
 
-import { useMutation, useQuery } from "@apollo/client/react";
 import { useMemo, useState } from "react";
 
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -14,10 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  TENANT_ROLE_PERMISSIONS_QUERY,
-  UPDATE_TENANT_ROLE_PERMISSIONS,
-} from "@/lib/apollo/operations";
+import { useMainRolePermissions } from "@/hooks/use-main-role-permissions";
 
 const userPermissions = [
   ["USERS_VIEW", "View users"],
@@ -84,13 +80,8 @@ function getRoleLabel(role: Role) {
 }
 
 export function RoleManagementPanel() {
-  const { data, loading, error, refetch } = useQuery(
-    TENANT_ROLE_PERMISSIONS_QUERY,
-  );
-
-  const [updatePermissions, { loading: saving }] = useMutation(
-    UPDATE_TENANT_ROLE_PERMISSIONS,
-  );
+  const { data, loading, error, refetch, updatePermissions, saving } =
+    useMainRolePermissions();
 
   const [pendingToggle, setPendingToggle] = useState<PendingToggle | null>(
     null,
