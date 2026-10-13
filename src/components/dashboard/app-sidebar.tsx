@@ -94,16 +94,6 @@ export function AppSidebar({ user }: { user: AuthUser }) {
             {user.tenant.name.charAt(0).toUpperCase()}
           </div>
         )}
-
-        <div className="ml-2 min-w-0 group-data-[collapsible=icon]:hidden">
-          <p className="truncate text-sm font-semibold text-sidebar-foreground">
-            {user.tenant.name}
-          </p>
-
-          <p className="truncate text-xs text-sidebar-foreground/60">
-            Main Console
-          </p>
-        </div>
       </SidebarHeader>
 
       <SidebarContent>
