@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { SubTenantRow } from "@/lib/apollo/types";
+import { useState, type FormEvent } from "react";
 
 export type TenantFormValues = {
   name: string;
@@ -74,7 +74,9 @@ export function TenantFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Edit tenant" : "Create sub-tenant"}</DialogTitle>
+          <DialogTitle>
+            {isEditing ? "Edit tenant" : "Create sub-tenant"}
+          </DialogTitle>
         </DialogHeader>
         <form className="space-y-4" onSubmit={submit}>
           <div className="space-y-1.5">
@@ -110,13 +112,19 @@ export function TenantFormDialog({
             <Input
               id="management-domain"
               value={values.managementDomain}
-              onChange={(event) => update("managementDomain", event.target.value)}
+              onChange={(event) =>
+                update("managementDomain", event.target.value)
+              }
               placeholder="admin.example.com"
               autoCapitalize="none"
               autoCorrect="off"
               disabled={loading}
             />
-            <p className="text-xs text-muted-foreground">Use a real custom hostname here. Local development shares localhost:3001 across tenants; tenant-specific links are available in Tenant details.</p>
+            <p className="text-xs text-muted-foreground">
+              Use a real custom hostname here. Local development shares
+              localhost:3001 across tenants; tenant-specific links are available
+              in Tenant details.
+            </p>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="website-domain">Public website domain</Label>
@@ -129,29 +137,46 @@ export function TenantFormDialog({
               autoCorrect="off"
               disabled={loading}
             />
-            <p className="text-xs text-muted-foreground">Use a real custom hostname here. Local public previews share localhost:3002 across tenants.</p>
+            <p className="text-xs text-muted-foreground">
+              Use a real custom hostname here. Local public previews share
+              localhost:3002 across tenants.
+            </p>
           </div>
           {isEditing ? (
             <div className="space-y-1.5">
-              <Label htmlFor="local-development-hostname">Local development hostname</Label>
+              <Label htmlFor="local-development-hostname">
+                Local development hostname
+              </Label>
               <Input
                 id="local-development-hostname"
                 value={values.localDevelopmentHostname}
-                onChange={(event) => update("localDevelopmentHostname", event.target.value)}
+                onChange={(event) =>
+                  update("localDevelopmentHostname", event.target.value)
+                }
                 placeholder="localhost"
                 autoCapitalize="none"
                 autoCorrect="off"
                 disabled={loading}
               />
-              <p className="text-xs text-muted-foreground">Enter localhost to make this tenant active on the shared local console (3001) and website (3002). Leave empty to remove the assignment.</p>
+              <p className="text-xs text-muted-foreground">
+                Enter localhost to make this tenant active on the shared local
+                console (3001) and website (3002). Leave empty to remove the
+                assignment.
+              </p>
               {hasLegacyLocalAddress(tenant?.managementDomain) ||
               hasLegacyLocalAddress(tenant?.websiteDomain) ? (
-                <p className="text-xs text-muted-foreground">Saving converts old localhost domain entries to this local-only assignment.</p>
+                <p className="text-xs text-muted-foreground">
+                  Saving converts old localhost domain entries to this
+                  local-only assignment.
+                </p>
               ) : null}
             </div>
           ) : null}
           <p className="text-xs text-muted-foreground">
-            Leave these fields blank for local development. Saving a domain only records a production hostname; DNS ownership, hosting, and HTTPS must be completed from Tenant details → Setup before it can serve traffic.
+            Leave these fields blank for local development. Saving a domain only
+            records a production hostname; DNS ownership, hosting, and HTTPS
+            must be completed from Tenant details → Setup before it can serve
+            traffic.
           </p>
           {error ? (
             <p className="text-sm text-destructive" role="alert">
@@ -168,7 +193,11 @@ export function TenantFormDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Saving…" : isEditing ? "Save changes" : "Create tenant"}
+              {loading
+                ? "Saving…"
+                : isEditing
+                  ? "Save changes"
+                  : "Create tenant"}
             </Button>
           </DialogFooter>
         </form>
@@ -180,14 +209,14 @@ export function TenantFormDialog({
 function hasLegacyLocalAddress(value: string | null | undefined) {
   return Boolean(
     value &&
-      /^(?:https?:\/\/)?(?:localhost|127\.0\.0\.1)(?::\d+)?\/?$/i.test(
-        value.trim(),
-      ),
+    /^(?:https?:\/\/)?(?:localhost|127\.0\.0\.1)(?::\d+)?\/?$/i.test(
+      value.trim(),
+    ),
   );
 }
 
 function productionHostnameValue(value: string | null | undefined) {
-  return hasLegacyLocalAddress(value) ? "" : value ?? "";
+  return hasLegacyLocalAddress(value) ? "" : (value ?? "");
 }
 
 function slugFromName(name: string) {

@@ -1,9 +1,7 @@
 "use client";
 
 import type { ManagedTenantUser } from "@/components/tenants/managed-tenant-users-table";
-import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Check, Copy } from "lucide-react";
 
 export function DeleteManagedTenantUserDialog({
   user,
@@ -31,8 +31,8 @@ export function DeleteManagedTenantUserDialog({
         <DialogHeader>
           <DialogTitle>Delete tenant user?</DialogTitle>
           <p className="text-sm text-muted-foreground">
-            Suspend this user first. Once suspended, deleting permanently removes
-            their account, credentials, and sessions from the database.
+            Suspend this user first. Once suspended, deleting permanently
+            removes their account, credentials, and sessions from the database.
           </p>
         </DialogHeader>
         {user ? (
@@ -42,7 +42,11 @@ export function DeleteManagedTenantUserDialog({
         ) : null}
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
         <DialogFooter>
-          <Button variant="outline" disabled={loading} onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            disabled={loading}
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button variant="destructive" disabled={loading} onClick={onConfirm}>
@@ -77,9 +81,17 @@ export function RegenerateActivationLinkDialog({
             Only the new link will work.
           </p>
         </DialogHeader>
-        {error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
+        {error ? (
+          <p className="text-sm text-destructive" role="alert">
+            {error}
+          </p>
+        ) : null}
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={loading}
+          >
             Cancel
           </Button>
           <Button onClick={onConfirm} disabled={loading}>
@@ -125,7 +137,9 @@ export function ManagedTenantActivationLinkDialog({
     <Dialog open={Boolean(result)} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{result?.isNew ? "New activation link" : "Current activation link"}</DialogTitle>
+          <DialogTitle>
+            {result?.isNew ? "New activation link" : "Current activation link"}
+          </DialogTitle>
           <p className="text-sm text-muted-foreground">
             {result?.isNew
               ? `Share this link securely with ${result.user.fullName}. It is single-use and expires ${expiry}.`
@@ -134,13 +148,25 @@ export function ManagedTenantActivationLinkDialog({
         </DialogHeader>
         {result?.url ? (
           <div className="flex gap-2">
-            <Input value={result.url} readOnly aria-label="New activation link" />
-            <Button type="button" variant="outline" size="icon" onClick={onCopy} aria-label="Copy activation link">
+            <Input
+              value={result.url}
+              readOnly
+              aria-label="New activation link"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={onCopy}
+              aria-label="Copy activation link"
+            >
               {copied ? <Check /> : <Copy />}
             </Button>
           </div>
         ) : loading ? (
-          <p className="text-sm text-muted-foreground" role="status">Loading current activation link…</p>
+          <p className="text-sm text-muted-foreground" role="status">
+            Loading current activation link…
+          </p>
         ) : result && !result.isNew && !error ? (
           <p className="text-sm text-muted-foreground" role="status">
             {result.expiresAt
@@ -148,8 +174,16 @@ export function ManagedTenantActivationLinkDialog({
               : "There is no current activation link available to recover. Regenerate to create a new link."}
           </p>
         ) : null}
-        {copied ? <p className="text-sm text-muted-foreground" role="status">Link copied.</p> : null}
-        {error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
+        {copied ? (
+          <p className="text-sm text-muted-foreground" role="status">
+            Link copied.
+          </p>
+        ) : null}
+        {error ? (
+          <p className="text-sm text-destructive" role="alert">
+            {error}
+          </p>
+        ) : null}
         <DialogFooter>
           {!result?.isNew && canRegenerate && result ? (
             <Button variant="outline" onClick={() => onRegenerate(result.user)}>
@@ -162,4 +196,3 @@ export function ManagedTenantActivationLinkDialog({
     </Dialog>
   );
 }
-
