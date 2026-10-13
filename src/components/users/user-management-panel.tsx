@@ -1,13 +1,19 @@
 "use client";
 
-import { useLazyQuery, useMutation, useQuery } from "@apollo/client/react";
+import { EmptyState } from "@/components/dashboard/empty-state";
+import { useMainUserDialogState } from "@/components/users/use-main-user-dialog-state";
+import { UserListToolbar } from "@/components/users/user-list-toolbar";
+import { UserManagementDialogs } from "@/components/users/user-management-dialogs";
+import { UserManagementTable } from "@/components/users/user-management-table";
+import { useMainConsoleUserPermissions } from "@/hooks/use-main-console-user-permissions";
+import { usePaginatedSearch } from "@/hooks/use-paginated-search";
 import {
   CREATE_MAIN_TENANT_USER,
   CURRENT_USER_QUERY,
   DELETE_MAIN_TENANT_USER,
   GENERATE_MAIN_TENANT_USER_ACTIVATION,
-  MAIN_TENANT_USER_ACTIVATION_LINK,
   GENERATE_MAIN_TENANT_USER_PASSWORD_RESET,
+  MAIN_TENANT_USER_ACTIVATION_LINK,
   MAIN_TENANT_USERS_QUERY,
   UPDATE_MAIN_TENANT_USER,
 } from "@/lib/apollo/operations";
@@ -19,30 +25,28 @@ import type {
   GenerateMainTenantUserActivationLinkMutationVariables,
   GenerateMainTenantUserPasswordResetLinkMutation,
   GenerateMainTenantUserPasswordResetLinkMutationVariables,
-  MainTenantUserRow,
   MainTenantUserActivationLinkQuery,
   MainTenantUserActivationLinkQueryVariables,
+  MainTenantUserRow,
   MainTenantUsersQuery,
 } from "@/lib/apollo/types";
-import { EmptyState } from "@/components/dashboard/empty-state";
-import { UserManagementDialogs } from "@/components/users/user-management-dialogs";
-import { UserManagementTable } from "@/components/users/user-management-table";
-import { UserListToolbar } from "@/components/users/user-list-toolbar";
-import { useMainUserDialogState } from "@/components/users/use-main-user-dialog-state";
-import { useMainConsoleUserPermissions } from "@/hooks/use-main-console-user-permissions";
-import { usePaginatedSearch } from "@/hooks/use-paginated-search";
+import { useLazyQuery, useMutation, useQuery } from "@apollo/client/react";
 
 type MainUserRow = MainTenantUserRow;
 
 export function UserManagementPanel() {
-  const { searchInput, setSearchInput, search, page, setPage, applySearch } = usePaginatedSearch();
+  const { searchInput, setSearchInput, search, page, setPage, applySearch } =
+    usePaginatedSearch();
   const pageSize = 10;
 
   const { data, loading, error, refetch } = useQuery<MainTenantUsersQuery>(
     MAIN_TENANT_USERS_QUERY,
     {
-      variables: { search: search || null, page, pageSize },
-      fetchPolicy: "cache-and-network",
+      variables: {
+        search: search || null,
+        page,
+        pageSize,
+      },
     },
   );
   const { data: meData } = useQuery<CurrentUserQuery>(CURRENT_USER_QUERY);
@@ -53,8 +57,12 @@ export function UserManagementPanel() {
     CreateMainTenantUserMutation,
     CreateMainTenantUserMutationVariables
   >(CREATE_MAIN_TENANT_USER);
-  const [updateUser, { loading: updating }] = useMutation(UPDATE_MAIN_TENANT_USER);
-  const [deleteUser, { loading: deleting }] = useMutation(DELETE_MAIN_TENANT_USER);
+  const [updateUser, { loading: updating }] = useMutation(
+    UPDATE_MAIN_TENANT_USER,
+  );
+  const [deleteUser, { loading: deleting }] = useMutation(
+    DELETE_MAIN_TENANT_USER,
+  );
   const [generateReset, { loading: resetting }] = useMutation<
     GenerateMainTenantUserPasswordResetLinkMutation,
     GenerateMainTenantUserPasswordResetLinkMutationVariables
@@ -68,7 +76,48 @@ export function UserManagementPanel() {
     MainTenantUserActivationLinkQueryVariables
   >(MAIN_TENANT_USER_ACTIVATION_LINK, { fetchPolicy: "no-cache" });
 
-  const { createOpen, setCreateOpen, createConfirmOpen, setCreateConfirmOpen, editUser, setEditUser, editConfirmOpen, setEditConfirmOpen, deleteTarget, setDeleteTarget, resetTarget, setResetTarget, activationTarget, setActivationTarget, activationResetMode, setActivationResetMode, activationLinkUser, setActivationLinkUser, activationLinkUnavailable, setActivationLinkUnavailable, activationLookupFailed, setActivationLookupFailed, firstName, setFirstName, lastName, setLastName, email, setEmail, status, setStatus, formError, setFormError, linkResult, setLinkResult, busyUserId, setBusyUserId, openCreate, openEdit, requestCreate, requestUpdate } = useMainUserDialogState();
+  const {
+    createOpen,
+    setCreateOpen,
+    createConfirmOpen,
+    setCreateConfirmOpen,
+    editUser,
+    setEditUser,
+    editConfirmOpen,
+    setEditConfirmOpen,
+    deleteTarget,
+    setDeleteTarget,
+    resetTarget,
+    setResetTarget,
+    activationTarget,
+    setActivationTarget,
+    activationResetMode,
+    setActivationResetMode,
+    activationLinkUser,
+    setActivationLinkUser,
+    activationLinkUnavailable,
+    setActivationLinkUnavailable,
+    activationLookupFailed,
+    setActivationLookupFailed,
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    email,
+    setEmail,
+    status,
+    setStatus,
+    formError,
+    setFormError,
+    linkResult,
+    setLinkResult,
+    busyUserId,
+    setBusyUserId,
+    openCreate,
+    openEdit,
+    requestCreate,
+    requestUpdate,
+  } = useMainUserDialogState();
 
   const pageData = data?.mainTenantUsers;
   const users = pageData?.items ?? [];
@@ -98,7 +147,9 @@ export function UserManagementPanel() {
     } catch (err) {
       setCreateConfirmOpen(false);
       setCreateOpen(true);
-      setFormError(err instanceof Error ? err.message : "Could not create user");
+      setFormError(
+        err instanceof Error ? err.message : "Could not create user",
+      );
     }
   }
 
@@ -113,8 +164,10 @@ export function UserManagementPanel() {
             firstName,
             lastName,
             email,
-            ...(editUser.status === "PENDING" || !canSuspendUsers ||
-            status === (editUser.membershipStatus === "DISABLED" ? "INACTIVE" : "ACTIVE")
+            ...(editUser.status === "PENDING" ||
+            !canSuspendUsers ||
+            status ===
+              (editUser.membershipStatus === "DISABLED" ? "INACTIVE" : "ACTIVE")
               ? {}
               : { suspended: status === "INACTIVE" }),
           },
@@ -125,7 +178,9 @@ export function UserManagementPanel() {
       await refetch();
     } catch (err) {
       setEditConfirmOpen(false);
-      setFormError(err instanceof Error ? err.message : "Could not update user");
+      setFormError(
+        err instanceof Error ? err.message : "Could not update user",
+      );
     }
   }
 
@@ -137,7 +192,9 @@ export function UserManagementPanel() {
       setDeleteTarget(null);
       await refetch();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Could not delete user");
+      setFormError(
+        err instanceof Error ? err.message : "Could not delete user",
+      );
     }
   }
 
@@ -210,7 +267,9 @@ export function UserManagementPanel() {
     setActivationLinkUnavailable(false);
     setActivationLookupFailed(false);
     try {
-      const result = await loadActivationLink({ variables: { userId: user.id } });
+      const result = await loadActivationLink({
+        variables: { userId: user.id },
+      });
       const payload = result.data?.mainTenantUserActivationLink;
       if (payload) {
         setActivationLinkUser(user);
@@ -224,7 +283,9 @@ export function UserManagementPanel() {
       setActivationLinkUnavailable(true);
       setActivationTarget(user);
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Could not load activation link");
+      setFormError(
+        err instanceof Error ? err.message : "Could not load activation link",
+      );
       setActivationLookupFailed(true);
       setActivationTarget(user);
     } finally {
@@ -321,22 +382,54 @@ export function UserManagementPanel() {
 
       <UserManagementDialogs
         {...{
-          createOpen, setCreateOpen, createConfirmOpen, setCreateConfirmOpen,
-          editUser, setEditUser, editConfirmOpen, setEditConfirmOpen,
-          deleteTarget, setDeleteTarget, resetTarget, setResetTarget,
-          activationTarget, setActivationTarget, firstName, setFirstName,
-          lastName, setLastName, email, setEmail, status, setStatus,
-          formError, setFormError, linkResult, setLinkResult, creating, updating,
-          deleting, resetting, regenerating, requestCreate, requestUpdate,
-          confirmCreate, confirmUpdate, handleDelete, confirmResetPassword,
-          confirmActivationLink, copyLink,
-          activationLinkUnavailable, activationLinkUser, requestActivationRegeneration,
-          activationLookupFailed, retryActivationLookup,
+          createOpen,
+          setCreateOpen,
+          createConfirmOpen,
+          setCreateConfirmOpen,
+          editUser,
+          setEditUser,
+          editConfirmOpen,
+          setEditConfirmOpen,
+          deleteTarget,
+          setDeleteTarget,
+          resetTarget,
+          setResetTarget,
+          activationTarget,
+          setActivationTarget,
+          firstName,
+          setFirstName,
+          lastName,
+          setLastName,
+          email,
+          setEmail,
+          status,
+          setStatus,
+          formError,
+          setFormError,
+          linkResult,
+          setLinkResult,
+          creating,
+          updating,
+          deleting,
+          resetting,
+          regenerating,
+          requestCreate,
+          requestUpdate,
+          confirmCreate,
+          confirmUpdate,
+          handleDelete,
+          confirmResetPassword,
+          confirmActivationLink,
+          copyLink,
+          activationLinkUnavailable,
+          activationLinkUser,
+          requestActivationRegeneration,
+          activationLookupFailed,
+          retryActivationLookup,
           activationResetMode,
           canSuspendUsers,
         }}
       />
-
     </div>
   );
 }

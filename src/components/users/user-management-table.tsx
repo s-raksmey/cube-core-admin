@@ -10,8 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { KeyRound, Link2, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import type { MainTenantUserRow } from "@/lib/apollo/types";
+import { KeyRound, Link2, Pencil, RotateCcw, Trash2 } from "lucide-react";
 
 type MainUserRow = MainTenantUserRow;
 

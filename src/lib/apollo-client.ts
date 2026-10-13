@@ -1,23 +1,24 @@
 "use client";
 
-import {
-  ApolloClient,
-  ApolloLink,
-  HttpLink,
-  InMemoryCache,
-} from "@apollo/client";
+import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
 
 export function createApolloClient() {
-  const httpLink = new HttpLink({
-    uri: "/graphql",
-    credentials: "same-origin",
-  });
-
   return new ApolloClient({
-    link: ApolloLink.from([httpLink]),
+    link: new HttpLink({
+      uri: "/graphql",
+      credentials: "same-origin",
+    }),
+
     cache: new InMemoryCache(),
+
     defaultOptions: {
-      watchQuery: { fetchPolicy: "cache-and-network" },
+      watchQuery: {
+        fetchPolicy: "cache-and-network",
+        nextFetchPolicy: "cache-first",
+      },
+      query: {
+        fetchPolicy: "network-only",
+      },
     },
   });
 }

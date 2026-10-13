@@ -1,7 +1,5 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
-import type { MainTenantUserRow } from "@/lib/apollo/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,54 +10,110 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { MainTenantUserDeleteDialog } from "@/components/users/main-tenant-user-delete-dialog";
 import { MainTenantUserFields } from "@/components/users/main-tenant-user-fields";
 import { MainUserSecurityDialogs } from "@/components/users/main-user-security-dialogs";
-import { MainTenantUserDeleteDialog } from "@/components/users/main-tenant-user-delete-dialog";
+import type { MainTenantUserRow } from "@/lib/apollo/types";
+import type { Dispatch, SetStateAction } from "react";
 
 type LinkResult = { url: string; expiresAt: string; label: string };
 type User = MainTenantUserRow;
 
 type UserManagementDialogsProps = {
-  createOpen: boolean; setCreateOpen: Dispatch<SetStateAction<boolean>>;
-  createConfirmOpen: boolean; setCreateConfirmOpen: Dispatch<SetStateAction<boolean>>;
-  editUser: User | null; setEditUser: Dispatch<SetStateAction<User | null>>;
-  editConfirmOpen: boolean; setEditConfirmOpen: Dispatch<SetStateAction<boolean>>;
-  deleteTarget: User | null; setDeleteTarget: Dispatch<SetStateAction<User | null>>;
-  resetTarget: User | null; setResetTarget: Dispatch<SetStateAction<User | null>>;
-  activationTarget: User | null; setActivationTarget: Dispatch<SetStateAction<User | null>>;
+  createOpen: boolean;
+  setCreateOpen: Dispatch<SetStateAction<boolean>>;
+  createConfirmOpen: boolean;
+  setCreateConfirmOpen: Dispatch<SetStateAction<boolean>>;
+  editUser: User | null;
+  setEditUser: Dispatch<SetStateAction<User | null>>;
+  editConfirmOpen: boolean;
+  setEditConfirmOpen: Dispatch<SetStateAction<boolean>>;
+  deleteTarget: User | null;
+  setDeleteTarget: Dispatch<SetStateAction<User | null>>;
+  resetTarget: User | null;
+  setResetTarget: Dispatch<SetStateAction<User | null>>;
+  activationTarget: User | null;
+  setActivationTarget: Dispatch<SetStateAction<User | null>>;
   activationLinkUnavailable: boolean;
   activationLookupFailed: boolean;
   activationResetMode: boolean;
   activationLinkUser: User | null;
   requestActivationRegeneration: () => void;
   retryActivationLookup: () => void;
-  firstName: string; setFirstName: Dispatch<SetStateAction<string>>;
-  lastName: string; setLastName: Dispatch<SetStateAction<string>>;
-  email: string; setEmail: Dispatch<SetStateAction<string>>;
+  firstName: string;
+  setFirstName: Dispatch<SetStateAction<string>>;
+  lastName: string;
+  setLastName: Dispatch<SetStateAction<string>>;
+  email: string;
+  setEmail: Dispatch<SetStateAction<string>>;
   status: "ACTIVE" | "INACTIVE";
   setStatus: Dispatch<SetStateAction<"ACTIVE" | "INACTIVE">>;
   canSuspendUsers: boolean;
-  formError: string | null; setFormError: Dispatch<SetStateAction<string | null>>;
-  linkResult: LinkResult | null; setLinkResult: Dispatch<SetStateAction<LinkResult | null>>;
-  creating: boolean; updating: boolean; deleting: boolean; resetting: boolean; regenerating: boolean;
-  requestCreate: () => void; requestUpdate: () => void;
-  confirmCreate: () => Promise<void>; confirmUpdate: () => Promise<void>;
-  handleDelete: () => Promise<void>; confirmResetPassword: () => Promise<void>;
-  confirmActivationLink: () => Promise<void>; copyLink: () => Promise<void>;
+  formError: string | null;
+  setFormError: Dispatch<SetStateAction<string | null>>;
+  linkResult: LinkResult | null;
+  setLinkResult: Dispatch<SetStateAction<LinkResult | null>>;
+  creating: boolean;
+  updating: boolean;
+  deleting: boolean;
+  resetting: boolean;
+  regenerating: boolean;
+  requestCreate: () => void;
+  requestUpdate: () => void;
+  confirmCreate: () => Promise<void>;
+  confirmUpdate: () => Promise<void>;
+  handleDelete: () => Promise<void>;
+  confirmResetPassword: () => Promise<void>;
+  confirmActivationLink: () => Promise<void>;
+  copyLink: () => Promise<void>;
 };
 
 export function UserManagementDialogs(props: UserManagementDialogsProps) {
   const {
-    createOpen, setCreateOpen, createConfirmOpen, setCreateConfirmOpen,
-    editUser, setEditUser, editConfirmOpen, setEditConfirmOpen,
-    deleteTarget, setDeleteTarget, resetTarget, setResetTarget,
-    activationTarget, setActivationTarget, firstName, setFirstName,
-    lastName, setLastName, email, setEmail, status, setStatus, canSuspendUsers,
-    formError, setFormError, linkResult, setLinkResult, creating, updating,
-    deleting, resetting, regenerating, requestCreate, requestUpdate,
-    confirmCreate, confirmUpdate, handleDelete, confirmResetPassword,
-    confirmActivationLink, copyLink, activationLinkUnavailable,
-    activationLinkUser, requestActivationRegeneration, activationLookupFailed,
+    createOpen,
+    setCreateOpen,
+    createConfirmOpen,
+    setCreateConfirmOpen,
+    editUser,
+    setEditUser,
+    editConfirmOpen,
+    setEditConfirmOpen,
+    deleteTarget,
+    setDeleteTarget,
+    resetTarget,
+    setResetTarget,
+    activationTarget,
+    setActivationTarget,
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    email,
+    setEmail,
+    status,
+    setStatus,
+    canSuspendUsers,
+    formError,
+    setFormError,
+    linkResult,
+    setLinkResult,
+    creating,
+    updating,
+    deleting,
+    resetting,
+    regenerating,
+    requestCreate,
+    requestUpdate,
+    confirmCreate,
+    confirmUpdate,
+    handleDelete,
+    confirmResetPassword,
+    confirmActivationLink,
+    copyLink,
+    activationLinkUnavailable,
+    activationLinkUser,
+    requestActivationRegeneration,
+    activationLookupFailed,
     activationResetMode,
     retryActivationLookup,
   } = props;
@@ -76,15 +130,25 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
           <DialogHeader>
             <DialogTitle>Create User</DialogTitle>
             <DialogDescription>
-              Creates a Main Tenant SuperAdmin. Names may match other users; email
-              must be unique. An activation link lets them choose a username, set
-              a password, verify 2FA, and save recovery codes.
+              Creates a Main Tenant SuperAdmin. Names may match other users;
+              email must be unique. An activation link lets them choose a
+              username, set a password, verify 2FA, and save recovery codes.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <MainTenantUserFields idPrefix="create" firstName={firstName} lastName={lastName} email={email} onFirstNameChange={setFirstName} onLastNameChange={setLastName} onEmailChange={setEmail} autoFocus />
+            <MainTenantUserFields
+              idPrefix="create"
+              firstName={firstName}
+              lastName={lastName}
+              email={email}
+              onFirstNameChange={setFirstName}
+              onLastNameChange={setLastName}
+              onEmailChange={setEmail}
+              autoFocus
+            />
             <div className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
-              Role: <span className="font-medium text-foreground">SUPERADMIN</span>
+              Role:{" "}
+              <span className="font-medium text-foreground">SUPERADMIN</span>
             </div>
             {formError ? (
               <p className="text-sm text-destructive">{formError}</p>
@@ -101,9 +165,7 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
             <Button
               type="button"
               onClick={requestCreate}
-              disabled={
-                !firstName.trim() || !lastName.trim() || !email.trim()
-              }
+              disabled={!firstName.trim() || !lastName.trim() || !email.trim()}
             >
               Continue
             </Button>
@@ -146,11 +208,7 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
             >
               Back
             </Button>
-            <Button
-              type="button"
-              onClick={confirmCreate}
-              disabled={creating}
-            >
+            <Button type="button" onClick={confirmCreate} disabled={creating}>
               {creating ? "Creating…" : "Yes, create user"}
             </Button>
           </DialogFooter>
@@ -174,33 +232,43 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <MainTenantUserFields idPrefix="edit" firstName={firstName} lastName={lastName} email={email} onFirstNameChange={setFirstName} onLastNameChange={setLastName} onEmailChange={setEmail} />
-            {canSuspendUsers ? <div className="space-y-1.5">
-              <Label htmlFor="edit-status">Access</Label>
-              {editUser?.status === "PENDING" ? (
-                <div className="space-y-1.5">
-                  <div className="flex h-9 items-center rounded-md border border-input px-3 text-sm text-muted-foreground">
-                    Pending activation
+            <MainTenantUserFields
+              idPrefix="edit"
+              firstName={firstName}
+              lastName={lastName}
+              email={email}
+              onFirstNameChange={setFirstName}
+              onLastNameChange={setLastName}
+              onEmailChange={setEmail}
+            />
+            {canSuspendUsers ? (
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-status">Access</Label>
+                {editUser?.status === "PENDING" ? (
+                  <div className="space-y-1.5">
+                    <div className="flex h-9 items-center rounded-md border border-input px-3 text-sm text-muted-foreground">
+                      Pending activation
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      The user must complete activation before their access
+                      status can be changed here.
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    The user must complete activation before their access status
-                    can be changed here.
-                  </p>
-                </div>
-              ) : (
-                <select
-                  id="edit-status"
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                  value={status}
-                  onChange={(e) =>
-                    setStatus(e.target.value as "ACTIVE" | "INACTIVE")
-                  }
-                >
-                  <option value="ACTIVE">Unsuspend</option>
-                  <option value="INACTIVE">Suspend</option>
-                </select>
-              )}
-            </div> : null}
+                ) : (
+                  <select
+                    id="edit-status"
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    value={status}
+                    onChange={(e) =>
+                      setStatus(e.target.value as "ACTIVE" | "INACTIVE")
+                    }
+                  >
+                    <option value="ACTIVE">Unsuspend</option>
+                    <option value="INACTIVE">Suspend</option>
+                  </select>
+                )}
+              </div>
+            ) : null}
             {formError ? (
               <p className="text-sm text-destructive">{formError}</p>
             ) : null}
@@ -265,11 +333,7 @@ export function UserManagementDialogs(props: UserManagementDialogsProps) {
             >
               Back
             </Button>
-            <Button
-              type="button"
-              onClick={confirmUpdate}
-              disabled={updating}
-            >
+            <Button type="button" onClick={confirmUpdate} disabled={updating}>
               {updating ? "Saving…" : "Yes, save changes"}
             </Button>
           </DialogFooter>
