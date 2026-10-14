@@ -14,6 +14,17 @@ export const MAIN_SETTINGS_PERMISSION_ROWS = [
   ["BRANDING_UPDATE", "Edit settings"],
 ] as const;
 
+export const MAIN_CATEGORY_PERMISSION_ROWS = [
+  ["CATEGORY_VIEW", "View category"],
+  ["CATEGORY_VIEW_SUBCATEGORY", "View sub category"],
+  ["CATEGORY_CREATE", "Create category"],
+  ["CATEGORY_CREATE_SUBCATEGORY", "Create sub category"],
+  ["CATEGORY_EDIT", "Edit category"],
+  ["CATEGORY_EDIT_SUBCATEGORY", "Edit sub category"],
+  ["CATEGORY_DELETE", "Delete category"],
+  ["CATEGORY_DELETE_SUBCATEGORY", "Delete sub category"],
+] as const;
+
 export const MAIN_PERMISSION_ROLES = ["SUPERADMIN", "ADMIN", "EDITOR"] as const;
 
 export type MainTenantRole = (typeof MAIN_PERMISSION_ROLES)[number];
@@ -23,7 +34,8 @@ export type MainTenantSettingsPermission =
   (typeof MAIN_SETTINGS_PERMISSION_ROWS)[number][0];
 export type MainTenantPermission =
   | MainTenantUserPermission
-  | MainTenantSettingsPermission;
+  | MainTenantSettingsPermission
+  | (typeof MAIN_CATEGORY_PERMISSION_ROWS)[number][0];
 export type MainTenantPermissionState = Record<
   MainTenantRole,
   Set<MainTenantPermission>
@@ -40,10 +52,12 @@ export const EDITOR_ALLOWED_PERMISSIONS = new Set<MainTenantPermission>([
   "USERS_VIEW",
   "USERS_EDIT",
   "BRANDING_VIEW",
+  "CATEGORY_VIEW",
+  "CATEGORY_VIEW_SUBCATEGORY",
 ]);
 
 export const EDITOR_PERMISSIONS_MESSAGE =
-  "Editor can only be granted View users, Edit users, and View settings.";
+  "Editor can only be granted view permissions for users, categories, and settings.";
 
 export function emptyMainTenantPermissions(): MainTenantPermissionState {
   return {
