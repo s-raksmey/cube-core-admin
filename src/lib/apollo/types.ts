@@ -25,6 +25,7 @@ export type {
   MainTenantUserActivationLinkQuery,
   MainTenantUserActivationLinkQueryVariables,
   PlatformDashboardQuery,
+  PlatformAuditLogsQuery,
   TenantDashboardQuery,
   SubTenantsQuery,
   SubTenantsQueryVariables,

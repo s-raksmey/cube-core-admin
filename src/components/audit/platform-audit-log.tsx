@@ -19,8 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PLATFORM_AUDIT_LOGS_QUERY } from "@/lib/apollo/operations";
-import { useQuery } from "@apollo/client/react";
+import { usePlatformAuditLogs } from "@/hooks/use-platform-audit-logs";
 import { RefreshCw } from "lucide-react";
 import { useState } from "react";
 
@@ -35,23 +34,12 @@ function formatAuditDetails(details: string | null) {
 
 /** Displays the same audited platform events summarized on the dashboard. */
 export function PlatformAuditLog() {
-  const [requestedPage, setRequestedPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { data, previousData, error, loading, refetch } = useQuery(
-    PLATFORM_AUDIT_LOGS_QUERY,
-    { variables: { page: requestedPage } },
-  );
-  // Preserve the current table while Apollo fetches the next page.
-  const auditPage =
-    data?.platformAuditLogs ?? previousData?.platformAuditLogs;
-  const items = auditPage?.items ?? [];
+  const audit = usePlatformAuditLogs();
+  const items = audit.logs;
   const selectedLog = items.find((item) => item.id === selectedId) ?? null;
-  const page = auditPage?.page ?? requestedPage;
-  const pageSize = auditPage?.pageSize ?? 10;
-  const total = auditPage?.total ?? 0;
-  const firstItem = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const lastItem = Math.min(page * pageSize, total);
-  const canGoNext = page * pageSize < total;
+  const firstItem = audit.total === 0 ? 0 : (audit.page - 1) * audit.pageSize + 1;
+  const lastItem = Math.min(audit.page * audit.pageSize, audit.total);
 
   return (
     <div className="space-y-6">
@@ -62,8 +50,8 @@ export function PlatformAuditLog() {
         actions={
           <Button
             variant="outline"
-            disabled={loading}
-            onClick={() => void refetch({ page })}
+            disabled={audit.loading}
+            onClick={() => void audit.refresh()}
           >
             <RefreshCw className="size-4" />
             Refresh
@@ -71,12 +59,12 @@ export function PlatformAuditLog() {
         }
       />
 
-      {error ? (
+      {audit.blockingError && audit.error ? (
         <EmptyState
           title="Unable to load audit logs"
-          description={error.message}
+          description={audit.error.message}
           action={
-            <Button variant="outline" onClick={() => void refetch()}>
+            <Button variant="outline" onClick={() => void audit.refresh()}>
               Retry
             </Button>
           }
@@ -95,7 +83,7 @@ export function PlatformAuditLog() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading && !auditPage ? (
+              {audit.initialLoading ? (
                 <TableRow><TableCell colSpan={6} className="h-28 text-center text-muted-foreground">Loading audit logs…</TableCell></TableRow>
               ) : items.length === 0 ? (
                 <TableRow><TableCell colSpan={6} className="h-28 text-center text-muted-foreground">No audit logs yet.</TableCell></TableRow>
@@ -119,10 +107,10 @@ export function PlatformAuditLog() {
             </TableBody>
           </Table>
           <div className="flex items-center justify-between border-t border-border px-4 py-3">
-            <p className="text-sm text-muted-foreground">Showing {firstItem}–{lastItem} of {total}</p>
+            <p className="text-sm text-muted-foreground">Showing {firstItem}–{lastItem} of {audit.total}</p>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={loading || page <= 1} onClick={() => setRequestedPage(page - 1)}>Previous</Button>
-              <Button variant="outline" size="sm" disabled={loading || !canGoNext} onClick={() => setRequestedPage(page + 1)}>Next</Button>
+              <Button variant="outline" size="sm" disabled={audit.loading || !audit.canPrev} onClick={() => audit.setPage(audit.page - 1)}>Previous</Button>
+              <Button variant="outline" size="sm" disabled={audit.loading || !audit.canNext} onClick={() => audit.setPage(audit.page + 1)}>Next</Button>
             </div>
           </div>
         </div>
