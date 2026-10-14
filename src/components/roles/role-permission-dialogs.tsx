@@ -49,9 +49,11 @@ export function RolePermissionDialogs({
               {pendingToggle ? <>
                 {pendingToggle.enabled ? "Enable" : "Disable"} <span className="font-medium text-foreground">{pendingToggle.label}</span> for the <span className="font-medium text-foreground">{mainTenantRoleLabel(pendingToggle.role)}</span> role? This change takes effect immediately for current and future sessions with this role.
                 {pendingToggle.enabled && pendingToggle.permission.startsWith("USERS_") && pendingToggle.permission !== "USERS_VIEW" ? " View users will also be enabled so this role can open the Users page." : null}
+                {pendingToggle.enabled && pendingToggle.permission.startsWith("ARTICLE_") && pendingToggle.permission !== "ARTICLE_VIEW" ? " View articles will also be enabled." : null}
                 {pendingToggle.enabled && pendingToggle.permission.startsWith("CATEGORY_") && pendingToggle.permission !== "CATEGORY_VIEW" ? " View category will also be enabled so this role can access categories." : null}
                 {pendingToggle.enabled && pendingToggle.permission.endsWith("SUBCATEGORY") && pendingToggle.permission !== "CATEGORY_VIEW_SUBCATEGORY" ? " View sub category will also be enabled so this role can access sub categories." : null}
                 {!pendingToggle.enabled && pendingToggle.permission === "USERS_VIEW" ? " Disabling View users also removes every other user-management permission for this role." : null}
+                {!pendingToggle.enabled && pendingToggle.permission === "ARTICLE_VIEW" ? " Disabling View articles also removes other article permissions for this role." : null}
                 {!pendingToggle.enabled && pendingToggle.permission === "CATEGORY_VIEW" ? " Disabling View category also removes category create, edit, and delete permissions." : null}
                 {!pendingToggle.enabled && pendingToggle.permission === "CATEGORY_VIEW_SUBCATEGORY" ? " Disabling View sub category also removes sub category create, edit, and delete permissions." : null}
               </> : null}

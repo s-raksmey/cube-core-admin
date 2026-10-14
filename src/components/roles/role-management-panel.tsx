@@ -11,6 +11,7 @@ import {
   MAIN_PERMISSION_ROLES,
   MAIN_SETTINGS_PERMISSION_ROWS,
   MAIN_CATEGORY_PERMISSION_ROWS,
+  MAIN_ARTICLE_PERMISSION_ROWS,
   MAIN_USER_PERMISSION_ROWS,
   emptyMainTenantPermissions,
   mainTenantRoleLabel,
@@ -69,6 +70,7 @@ export function RoleManagementPanel() {
         nextPermissions.add("USERS_VIEW");
       }
       if (permission.startsWith("TAG_") && permission !== "TAG_VIEW") nextPermissions.add("TAG_VIEW");
+      if (permission.startsWith("ARTICLE_") && permission !== "ARTICLE_VIEW") nextPermissions.add("ARTICLE_VIEW");
       if (permission.startsWith("CATEGORY_") && permission !== "CATEGORY_VIEW") {
         nextPermissions.add("CATEGORY_VIEW");
       }
@@ -82,6 +84,8 @@ export function RoleManagementPanel() {
         }
       } else if (permission === "TAG_VIEW") {
         for (const [code] of MAIN_CATEGORY_PERMISSION_ROWS) if (code.startsWith("TAG_")) nextPermissions.delete(code);
+      } else if (permission === "ARTICLE_VIEW") {
+        for (const [code] of MAIN_ARTICLE_PERMISSION_ROWS) nextPermissions.delete(code);
       } else if (permission === "CATEGORY_VIEW") {
         for (const [categoryPermission] of MAIN_CATEGORY_PERMISSION_ROWS) {
           if (categoryPermission.startsWith("CATEGORY_") && !categoryPermission.endsWith("SUBCATEGORY")) nextPermissions.delete(categoryPermission);
@@ -168,6 +172,7 @@ export function RoleManagementPanel() {
     label,
   }));
   const categoryRows = MAIN_CATEGORY_PERMISSION_ROWS.map(([key, label]) => ({ key, label }));
+  const articleRows = MAIN_ARTICLE_PERMISSION_ROWS.map(([key, label]) => ({ key, label }));
 
   return (
     <div className="space-y-5">
@@ -242,6 +247,15 @@ export function RoleManagementPanel() {
             description="Control category and sub category actions for each role. Editors can only view categories."
             columns={settingsColumns}
             rows={categoryRows}
+            saving={saving}
+            isEnabled={(role, permission) => selected[role as MainTenantRole].has(permission as MainTenantPermission)}
+            onToggle={handleToggle}
+          />
+          <PermissionMatrix
+            title="Articles"
+            description="Control writing, review, publishing, scheduling, and presentation actions."
+            columns={settingsColumns}
+            rows={articleRows}
             saving={saving}
             isEnabled={(role, permission) => selected[role as MainTenantRole].has(permission as MainTenantPermission)}
             onToggle={handleToggle}

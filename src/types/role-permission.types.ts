@@ -29,6 +29,23 @@ export const MAIN_CATEGORY_PERMISSION_ROWS = [
   ["TAG_DELETE", "Delete tags"],
 ] as const;
 
+export const MAIN_ARTICLE_PERMISSION_ROWS = [
+  ["ARTICLE_VIEW", "View articles"],
+  ["ARTICLE_CREATE", "Create articles"],
+  ["ARTICLE_UPDATE_OWN", "Edit own articles"],
+  ["ARTICLE_UPDATE_ANY", "Edit any article"],
+  ["ARTICLE_DELETE_OWN", "Delete own drafts"],
+  ["ARTICLE_DELETE_ANY", "Delete any draft"],
+  ["ARTICLE_SUBMIT", "Submit for review"],
+  ["ARTICLE_REVIEW", "Review articles"],
+  ["ARTICLE_PUBLISH", "Publish articles"],
+  ["ARTICLE_SCHEDULE", "Schedule articles"],
+  ["ARTICLE_ARCHIVE", "Archive articles"],
+  ["ARTICLE_RESTORE", "Restore articles"],
+  ["ARTICLE_SET_BREAKING", "Set breaking news"],
+  ["ARTICLE_SET_FEATURED", "Set featured articles"],
+] as const;
+
 export const MAIN_PERMISSION_ROLES = ["SUPERADMIN", "ADMIN", "EDITOR"] as const;
 
 export type MainTenantRole = (typeof MAIN_PERMISSION_ROLES)[number];
@@ -39,7 +56,8 @@ export type MainTenantSettingsPermission =
 export type MainTenantPermission =
   | MainTenantUserPermission
   | MainTenantSettingsPermission
-  | (typeof MAIN_CATEGORY_PERMISSION_ROWS)[number][0];
+  | (typeof MAIN_CATEGORY_PERMISSION_ROWS)[number][0]
+  | (typeof MAIN_ARTICLE_PERMISSION_ROWS)[number][0];
 export type MainTenantPermissionState = Record<
   MainTenantRole,
   Set<MainTenantPermission>
@@ -59,10 +77,11 @@ export const EDITOR_ALLOWED_PERMISSIONS = new Set<MainTenantPermission>([
   "CATEGORY_VIEW",
   "CATEGORY_VIEW_SUBCATEGORY",
   "TAG_VIEW",
+  ...MAIN_ARTICLE_PERMISSION_ROWS.map(([code]) => code),
 ]);
 
 export const EDITOR_PERMISSIONS_MESSAGE =
-  "Editor can only be granted view permissions for users, categories, and settings.";
+  "Editor can be granted article permissions. User and settings permissions remain limited.";
 
 export function emptyMainTenantPermissions(): MainTenantPermissionState {
   return {
