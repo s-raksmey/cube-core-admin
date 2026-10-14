@@ -23,6 +23,10 @@ export const MAIN_CATEGORY_PERMISSION_ROWS = [
   ["CATEGORY_EDIT_SUBCATEGORY", "Edit sub category"],
   ["CATEGORY_DELETE", "Delete category"],
   ["CATEGORY_DELETE_SUBCATEGORY", "Delete sub category"],
+  ["TAG_VIEW", "View tags"],
+  ["TAG_CREATE", "Create tags"],
+  ["TAG_EDIT", "Edit tags"],
+  ["TAG_DELETE", "Delete tags"],
 ] as const;
 
 export const MAIN_PERMISSION_ROLES = ["SUPERADMIN", "ADMIN", "EDITOR"] as const;
@@ -54,6 +58,7 @@ export const EDITOR_ALLOWED_PERMISSIONS = new Set<MainTenantPermission>([
   "BRANDING_VIEW",
   "CATEGORY_VIEW",
   "CATEGORY_VIEW_SUBCATEGORY",
+  "TAG_VIEW",
 ]);
 
 export const EDITOR_PERMISSIONS_MESSAGE =

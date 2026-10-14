@@ -68,6 +68,7 @@ export function RoleManagementPanel() {
       if (permission.startsWith("USERS_") && permission !== "USERS_VIEW") {
         nextPermissions.add("USERS_VIEW");
       }
+      if (permission.startsWith("TAG_") && permission !== "TAG_VIEW") nextPermissions.add("TAG_VIEW");
       if (permission.startsWith("CATEGORY_") && permission !== "CATEGORY_VIEW") {
         nextPermissions.add("CATEGORY_VIEW");
       }
@@ -79,9 +80,11 @@ export function RoleManagementPanel() {
         for (const userPermission of MAIN_USER_PERMISSION_ROWS) {
           nextPermissions.delete(userPermission[0]);
         }
+      } else if (permission === "TAG_VIEW") {
+        for (const [code] of MAIN_CATEGORY_PERMISSION_ROWS) if (code.startsWith("TAG_")) nextPermissions.delete(code);
       } else if (permission === "CATEGORY_VIEW") {
         for (const [categoryPermission] of MAIN_CATEGORY_PERMISSION_ROWS) {
-          if (!categoryPermission.endsWith("SUBCATEGORY")) nextPermissions.delete(categoryPermission);
+          if (categoryPermission.startsWith("CATEGORY_") && !categoryPermission.endsWith("SUBCATEGORY")) nextPermissions.delete(categoryPermission);
         }
       } else if (permission === "CATEGORY_VIEW_SUBCATEGORY") {
         for (const [categoryPermission] of MAIN_CATEGORY_PERMISSION_ROWS) {
@@ -235,7 +238,7 @@ export function RoleManagementPanel() {
           />
 
           <PermissionMatrix
-            title="Categories"
+            title="Categories & Tags"
             description="Control category and sub category actions for each role. Editors can only view categories."
             columns={settingsColumns}
             rows={categoryRows}
