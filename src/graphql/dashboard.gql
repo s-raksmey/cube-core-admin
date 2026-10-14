@@ -30,6 +30,25 @@ query PlatformDashboard {
   }
 }
 
+query PlatformAuditLogs($page: Int) {
+  platformAuditLogs(page: $page) {
+    items {
+      id
+      action
+      success
+      createdAt
+      actorEmail
+      targetTenantName
+      targetType
+      targetId
+      details
+    }
+    total
+    page
+    pageSize
+  }
+}
+
 query TenantDashboard {
   tenantDashboard {
     tenant {

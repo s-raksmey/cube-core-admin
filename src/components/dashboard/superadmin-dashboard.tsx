@@ -17,12 +17,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { usePlatformDashboard } from "@/hooks/use-platform-dashboard";
-import type { AuthUser } from "@/lib/types";
 import { Activity, Building2, Shield, Users } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 
-export function SuperAdminDashboard({ user }: { user: AuthUser }) {
+export function SuperAdminDashboard() {
   const {
     dashboard,
     error,
@@ -58,7 +56,7 @@ export function SuperAdminDashboard({ user }: { user: AuthUser }) {
             <p className="text-sm font-medium text-primary">Main Tenant</p>
 
             <h2 className="mt-1 text-xl font-semibold text-foreground">
-              {user.tenant.name}
+              Cube Core
             </h2>
 
             <p className="mt-2 text-sm text-muted-foreground">
@@ -67,15 +65,6 @@ export function SuperAdminDashboard({ user }: { user: AuthUser }) {
               Main Tenant.
             </p>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Button variant="secondary" asChild>
-                <Link href="/settings">Platform Settings</Link>
-              </Button>
-
-              <Button variant="outline" asChild>
-                <Link href="/audit">View Audit Logs</Link>
-              </Button>
-            </div>
           </div>
 
           <div className="relative mx-auto aspect-square w-full max-w-55">
