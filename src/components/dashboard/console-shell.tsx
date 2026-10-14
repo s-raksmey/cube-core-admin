@@ -18,7 +18,10 @@ import {
 } from "@/components/ui/sidebar";
 import { LOGOUT_MUTATION } from "@/lib/apollo/operations";
 import { clearAdminSession } from "@/lib/auth/session-actions";
-import { mainTenantDocumentTitleStorageKey } from "@/lib/main-tenant-document-title";
+import {
+  mainTenantDocumentTitle,
+  mainTenantDocumentTitleStorageKey,
+} from "@/lib/main-tenant-document-title";
 import type { AuthUser } from "@/lib/types";
 import { useApolloClient } from "@apollo/client/react";
 import { LogOut } from "lucide-react";
@@ -38,9 +41,12 @@ export function ConsoleShell({
   const [loggingOut, setLoggingOut] = useState(false);
 
   useLayoutEffect(() => {
-    document.title = user.tenant.name;
-    localStorage.setItem(mainTenantDocumentTitleStorageKey, user.tenant.name);
-  }, [user.tenant.name]);
+    document.title = mainTenantDocumentTitle;
+    localStorage.setItem(
+      mainTenantDocumentTitleStorageKey,
+      mainTenantDocumentTitle,
+    );
+  }, []);
 
   async function handleLogout() {
     try {

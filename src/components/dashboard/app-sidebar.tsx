@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import type { AuthUser } from "@/lib/types";
 import { useMainSidebarBranding } from "@/hooks/use-main-sidebar-branding";
+import { mainTenantDocumentTitle } from "@/lib/main-tenant-document-title";
 import {
   Activity,
   Box,
@@ -121,7 +122,7 @@ export function AppSidebar({ user }: { user: AuthUser }) {
                         href={item.href}
                         className="no-underline"
                         onClick={() => {
-                          document.title = user.tenant.name;
+                          document.title = mainTenantDocumentTitle;
                         }}
                       >
                         <item.icon />

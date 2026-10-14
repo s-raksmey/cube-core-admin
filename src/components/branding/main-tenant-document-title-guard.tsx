@@ -1,6 +1,9 @@
 "use client";
 
-import { mainTenantDocumentTitleStorageKey } from "@/lib/main-tenant-document-title";
+import {
+  mainTenantDocumentTitle,
+  mainTenantDocumentTitleStorageKey,
+} from "@/lib/main-tenant-document-title";
 import { useEffect } from "react";
 
 /** Keeps the Main Tenant name in browser chrome during console route transitions. */
@@ -8,9 +11,9 @@ export function MainTenantDocumentTitleGuard() {
   useEffect(() => {
     const applyStoredTitle = () => {
       try {
-        const tenantName = localStorage.getItem(mainTenantDocumentTitleStorageKey);
-        if (tenantName && document.title !== tenantName) {
-          document.title = tenantName;
+        const title = localStorage.getItem(mainTenantDocumentTitleStorageKey);
+        if (title === mainTenantDocumentTitle && document.title !== title) {
+          document.title = title;
         }
       } catch {
         // Browser storage can be unavailable in privacy-restricted contexts.
