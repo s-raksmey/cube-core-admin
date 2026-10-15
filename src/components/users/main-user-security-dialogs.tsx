@@ -190,7 +190,8 @@ export function MainUserSecurityDialogs({
               </span>{" "}
               ({resetTarget?.email})? A valid unused link is reused. An expired
               or used link is replaced and stored for two hours. Their current
-              password will stop working after they set a new one. 2FA stays enabled.
+              password will stop working after they set a new one. 2FA stays
+              enabled.
             </DialogDescription>
           </DialogHeader>
           {formError ? (

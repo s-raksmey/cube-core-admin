@@ -1,9 +1,5 @@
 "use client";
 
-import type {
-  ManagedTenantUser,
-  ManagedTenantUserLinkResult,
-} from "@/types/tenant-management.types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,6 +9,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import type {
+  ManagedTenantUser,
+  ManagedTenantUserLinkResult,
+} from "@/types/tenant-management.types";
 import { Check, Copy } from "lucide-react";
 
 export function DeleteManagedTenantUserDialog({
@@ -96,11 +96,21 @@ export function RegenerateActivationLinkDialog({
             </DialogHeader>
             <div className="flex gap-2">
               <Input value={result.url} readOnly aria-label="Activation link" />
-              <Button type="button" variant="outline" size="icon" onClick={onCopy} aria-label="Copy activation link">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={onCopy}
+                aria-label="Copy activation link"
+              >
                 {copied ? <Check /> : <Copy />}
               </Button>
             </div>
-            {copied ? <p className="text-sm text-muted-foreground" role="status">Link copied.</p> : null}
+            {copied ? (
+              <p className="text-sm text-muted-foreground" role="status">
+                Link copied.
+              </p>
+            ) : null}
             <DialogFooter>
               <Button onClick={onDone}>Done</Button>
             </DialogFooter>
@@ -149,8 +159,46 @@ export function RegenerateActivationLinkDialog({
   );
 }
 
-export function ResetManagedTenantUserPasswordDialog({ user, error, loading, onOpenChange, onConfirm }: { user: ManagedTenantUser | null; error: string | null; loading: boolean; onOpenChange: (open: boolean) => void; onConfirm: () => void }) {
-  return <Dialog open={Boolean(user)} onOpenChange={onOpenChange}><DialogContent><DialogHeader><DialogTitle>Reset password?</DialogTitle><p className="text-sm text-muted-foreground">View the current single-use reset link for {user?.fullName} ({user?.email}). A valid unused stored link is reused; an expired or used link is replaced for two hours.</p></DialogHeader>{error ? <p className="text-sm text-destructive">{error}</p> : null}<DialogFooter><Button variant="outline" disabled={loading} onClick={() => onOpenChange(false)}>Cancel</Button><Button disabled={loading} onClick={onConfirm}>{loading ? "Loading link…" : "Yes, reset password"}</Button></DialogFooter></DialogContent></Dialog>;
+export function ResetManagedTenantUserPasswordDialog({
+  user,
+  error,
+  loading,
+  onOpenChange,
+  onConfirm,
+}: {
+  user: ManagedTenantUser | null;
+  error: string | null;
+  loading: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <Dialog open={Boolean(user)} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Reset password?</DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            View the current single-use reset link for {user?.fullName} (
+            {user?.email}). A valid unused stored link is reused; an expired or
+            used link is replaced for two hours.
+          </p>
+        </DialogHeader>
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+        <DialogFooter>
+          <Button
+            variant="outline"
+            disabled={loading}
+            onClick={() => onOpenChange(false)}
+          >
+            Cancel
+          </Button>
+          <Button disabled={loading} onClick={onConfirm}>
+            {loading ? "Loading link…" : "Yes, reset password"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export function ManagedTenantActivationLinkDialog({
@@ -191,8 +239,8 @@ export function ManagedTenantActivationLinkDialog({
             {result?.kind === "password-reset"
               ? `Use this single-use reset link for ${result.user.fullName}. It expires ${expiry}.`
               : result?.isNew
-              ? `Share this link securely with ${result.user.fullName}. It is single-use and expires ${expiry}.`
-              : `This existing link for ${result?.user.fullName} expires ${expiry}.`}
+                ? `Share this link securely with ${result.user.fullName}. It is single-use and expires ${expiry}.`
+                : `This existing link for ${result?.user.fullName} expires ${expiry}.`}
           </p>
         </DialogHeader>
         {result?.url ? (
@@ -200,14 +248,22 @@ export function ManagedTenantActivationLinkDialog({
             <Input
               value={result.url}
               readOnly
-              aria-label={result?.kind === "password-reset" ? "Password reset link" : "Activation link"}
+              aria-label={
+                result?.kind === "password-reset"
+                  ? "Password reset link"
+                  : "Activation link"
+              }
             />
             <Button
               type="button"
               variant="outline"
               size="icon"
               onClick={onCopy}
-              aria-label={result?.kind === "password-reset" ? "Copy password reset link" : "Copy activation link"}
+              aria-label={
+                result?.kind === "password-reset"
+                  ? "Copy password reset link"
+                  : "Copy activation link"
+              }
             >
               {copied ? <Check /> : <Copy />}
             </Button>

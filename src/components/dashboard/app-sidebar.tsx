@@ -13,9 +13,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import type { AuthUser } from "@/lib/types";
 import { useMainSidebarBranding } from "@/hooks/use-main-sidebar-branding";
 import { mainTenantDocumentTitle } from "@/lib/main-tenant-document-title";
+import type { AuthUser } from "@/lib/types";
 import {
   Activity,
   Box,

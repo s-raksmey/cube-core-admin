@@ -4,10 +4,10 @@ import { PasswordField } from "@/components/auth/password-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { ConsoleAuthChallenge, ConsoleAuthStep } from "@/types/auth.types";
 import { X } from "lucide-react";
 import Image from "next/image";
 import type { FormEvent } from "react";
-import type { ConsoleAuthChallenge, ConsoleAuthStep } from "@/types/auth.types";
 
 type ConsoleAuthCardProps = {
   step: ConsoleAuthStep;

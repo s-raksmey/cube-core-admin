@@ -10,11 +10,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useTenantDomainVerification } from "@/hooks/use-tenant-domain-verification";
 import type {
   TenantDomainPurpose,
   TenantDomainStatus,
 } from "@/lib/apollo/generated/graphql";
-import { useTenantDomainVerification } from "@/hooks/use-tenant-domain-verification";
 import { Check, Copy, LoaderCircle, RotateCw } from "lucide-react";
 
 export function TenantDomainSetupDialog({
@@ -37,9 +37,20 @@ export function TenantDomainSetupDialog({
   onChanged: () => void;
 }) {
   const {
-    challenge, error, copied, confirmedHttps, busy, starting, checking,
-    activating, beginVerification, checkVerification, markConnected,
-    setError, setCopied, setConfirmedHttps,
+    challenge,
+    error,
+    copied,
+    confirmedHttps,
+    busy,
+    starting,
+    checking,
+    activating,
+    beginVerification,
+    checkVerification,
+    markConnected,
+    setError,
+    setCopied,
+    setConfirmedHttps,
   } = useTenantDomainVerification({ tenantId, purpose, onChanged });
 
   async function copy(value: string) {

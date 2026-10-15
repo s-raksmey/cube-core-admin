@@ -12,9 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePaginatedSearch } from "@/hooks/use-paginated-search";
 import { useSubTenants } from "@/hooks/use-sub-tenants";
-import type { TenantFormValues } from "@/types/tenant-management.types";
 import type { TenantDomainPurpose } from "@/lib/apollo/generated/graphql";
 import type { SubTenantRow } from "@/lib/apollo/types";
+import type { TenantFormValues } from "@/types/tenant-management.types";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 

@@ -11,8 +11,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { SubTenantRow } from "@/lib/apollo/types";
-import { useState, type FormEvent } from "react";
 import type { TenantFormValues } from "@/types/tenant-management.types";
+import { useState, type FormEvent } from "react";
 
 export function TenantFormDialog({
   tenant,

@@ -102,7 +102,9 @@ function AssetCard({
               sizes={
                 config.social ? "(min-width: 1024px) 40vw, 100vw" : "240px"
               }
-              className={config.social ? "p-2 object-contain" : "p-4 object-contain"}
+              className={
+                config.social ? "p-2 object-contain" : "p-4 object-contain"
+              }
             />
           ) : (
             <span className="text-xs text-muted-foreground">

@@ -1,11 +1,11 @@
 "use client";
 
+import type { TenantDomainPurpose } from "@/lib/apollo/generated/graphql";
 import {
   ACTIVATE_TENANT_DOMAIN,
   CHECK_TENANT_DOMAIN_VERIFICATION,
   START_TENANT_DOMAIN_VERIFICATION,
 } from "@/lib/apollo/operations";
-import type { TenantDomainPurpose } from "@/lib/apollo/generated/graphql";
 import type { TenantDomainVerificationChallenge } from "@/types/tenant-domain.types";
 import { useMutation } from "@apollo/client/react";
 import { useState } from "react";
@@ -61,11 +61,15 @@ export function useTenantDomainVerification({
       const value = result.data?.checkTenantDomainVerification;
       if (!value) throw new Error("Verification status was not returned.");
       if (value.status === "PENDING_VERIFICATION") {
-        setError("The TXT record was not found yet. DNS changes can take time to propagate.");
+        setError(
+          "The TXT record was not found yet. DNS changes can take time to propagate.",
+        );
         return;
       }
       setChallenge((current) =>
-        current ? { ...current, status: value.status, verifiedAt: value.verifiedAt } : current,
+        current
+          ? { ...current, status: value.status, verifiedAt: value.verifiedAt }
+          : current,
       );
       onChanged();
     } catch (cause) {
@@ -77,12 +81,18 @@ export function useTenantDomainVerification({
     setError(null);
     try {
       const result = await activate({
-        variables: { tenantId, purpose, confirmHttpsAndRouting: confirmedHttps },
+        variables: {
+          tenantId,
+          purpose,
+          confirmHttpsAndRouting: confirmedHttps,
+        },
       });
       const value = result.data?.activateTenantDomain;
       if (!value) throw new Error("Domain status was not returned.");
       setChallenge((current) =>
-        current ? { ...current, status: value.status, verifiedAt: value.verifiedAt } : current,
+        current
+          ? { ...current, status: value.status, verifiedAt: value.verifiedAt }
+          : current,
       );
       onChanged();
     } catch (cause) {

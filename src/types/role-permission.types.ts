@@ -39,6 +39,7 @@ export const MAIN_ARTICLE_PERMISSION_ROWS = [
   ["ARTICLE_DELETE_ARCHIVED", "Permanently delete archived articles"],
   ["ARTICLE_SUBMIT", "Submit for review"],
   ["ARTICLE_REVIEW", "Review articles"],
+  ["ARTICLE_REQUEST_CHANGES", "Request article changes"],
   ["ARTICLE_PUBLISH", "Publish articles"],
   ["ARTICLE_UNPUBLISH", "Unpublish articles"],
   ["ARTICLE_SCHEDULE", "Schedule articles"],

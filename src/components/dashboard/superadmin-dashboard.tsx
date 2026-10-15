@@ -64,7 +64,6 @@ export function SuperAdminDashboard() {
               settings, and system health. Your session remains bound to the
               Main Tenant.
             </p>
-
           </div>
 
           <div className="relative mx-auto aspect-square w-full max-w-55">

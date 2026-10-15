@@ -8,12 +8,12 @@ import {
   verifyAdminRecoveryCode,
   verifyAdminTotpEnrollment,
 } from "@/lib/auth/session-actions";
+import type { ConsoleAuthChallenge, ConsoleAuthStep } from "@/types/auth.types";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import type { ConsoleAuthChallenge, ConsoleAuthStep } from "@/types/auth.types";
 
 type AuthStep = ConsoleAuthStep;
 type ChallengeState = ConsoleAuthChallenge;

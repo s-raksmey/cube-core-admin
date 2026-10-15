@@ -8,10 +8,10 @@ import { RolePermissionDialogs } from "@/components/roles/role-permission-dialog
 import { useMainRolePermissions } from "@/hooks/use-main-role-permissions";
 import {
   EDITOR_ALLOWED_PERMISSIONS,
+  MAIN_ARTICLE_PERMISSION_ROWS,
+  MAIN_CATEGORY_PERMISSION_ROWS,
   MAIN_PERMISSION_ROLES,
   MAIN_SETTINGS_PERMISSION_ROWS,
-  MAIN_CATEGORY_PERMISSION_ROWS,
-  MAIN_ARTICLE_PERMISSION_ROWS,
   MAIN_USER_PERMISSION_ROWS,
   emptyMainTenantPermissions,
   mainTenantRoleLabel,
@@ -21,14 +21,12 @@ import {
   type PendingMainTenantPermissionToggle,
 } from "@/types/role-permission.types";
 
-
 export function RoleManagementPanel() {
   const { data, loading, error, refetch, updatePermissions, saving } =
     useMainRolePermissions();
 
-  const [pendingToggle, setPendingToggle] = useState<PendingMainTenantPermissionToggle | null>(
-    null,
-  );
+  const [pendingToggle, setPendingToggle] =
+    useState<PendingMainTenantPermissionToggle | null>(null);
 
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -69,12 +67,20 @@ export function RoleManagementPanel() {
       if (permission.startsWith("USERS_") && permission !== "USERS_VIEW") {
         nextPermissions.add("USERS_VIEW");
       }
-      if (permission.startsWith("TAG_") && permission !== "TAG_VIEW") nextPermissions.add("TAG_VIEW");
-      if (permission.startsWith("ARTICLE_") && permission !== "ARTICLE_VIEW") nextPermissions.add("ARTICLE_VIEW");
-      if (permission.startsWith("CATEGORY_") && permission !== "CATEGORY_VIEW") {
+      if (permission.startsWith("TAG_") && permission !== "TAG_VIEW")
+        nextPermissions.add("TAG_VIEW");
+      if (permission.startsWith("ARTICLE_") && permission !== "ARTICLE_VIEW")
+        nextPermissions.add("ARTICLE_VIEW");
+      if (
+        permission.startsWith("CATEGORY_") &&
+        permission !== "CATEGORY_VIEW"
+      ) {
         nextPermissions.add("CATEGORY_VIEW");
       }
-      if (permission.endsWith("SUBCATEGORY") && permission !== "CATEGORY_VIEW_SUBCATEGORY") {
+      if (
+        permission.endsWith("SUBCATEGORY") &&
+        permission !== "CATEGORY_VIEW_SUBCATEGORY"
+      ) {
         nextPermissions.add("CATEGORY_VIEW_SUBCATEGORY");
       }
     } else {
@@ -83,16 +89,23 @@ export function RoleManagementPanel() {
           nextPermissions.delete(userPermission[0]);
         }
       } else if (permission === "TAG_VIEW") {
-        for (const [code] of MAIN_CATEGORY_PERMISSION_ROWS) if (code.startsWith("TAG_")) nextPermissions.delete(code);
+        for (const [code] of MAIN_CATEGORY_PERMISSION_ROWS)
+          if (code.startsWith("TAG_")) nextPermissions.delete(code);
       } else if (permission === "ARTICLE_VIEW") {
-        for (const [code] of MAIN_ARTICLE_PERMISSION_ROWS) nextPermissions.delete(code);
+        for (const [code] of MAIN_ARTICLE_PERMISSION_ROWS)
+          nextPermissions.delete(code);
       } else if (permission === "CATEGORY_VIEW") {
         for (const [categoryPermission] of MAIN_CATEGORY_PERMISSION_ROWS) {
-          if (categoryPermission.startsWith("CATEGORY_") && !categoryPermission.endsWith("SUBCATEGORY")) nextPermissions.delete(categoryPermission);
+          if (
+            categoryPermission.startsWith("CATEGORY_") &&
+            !categoryPermission.endsWith("SUBCATEGORY")
+          )
+            nextPermissions.delete(categoryPermission);
         }
       } else if (permission === "CATEGORY_VIEW_SUBCATEGORY") {
         for (const [categoryPermission] of MAIN_CATEGORY_PERMISSION_ROWS) {
-          if (categoryPermission.endsWith("SUBCATEGORY")) nextPermissions.delete(categoryPermission);
+          if (categoryPermission.endsWith("SUBCATEGORY"))
+            nextPermissions.delete(categoryPermission);
         }
       } else {
         nextPermissions.delete(permission);
@@ -171,8 +184,14 @@ export function RoleManagementPanel() {
     key,
     label,
   }));
-  const categoryRows = MAIN_CATEGORY_PERMISSION_ROWS.map(([key, label]) => ({ key, label }));
-  const articleRows = MAIN_ARTICLE_PERMISSION_ROWS.map(([key, label]) => ({ key, label }));
+  const categoryRows = MAIN_CATEGORY_PERMISSION_ROWS.map(([key, label]) => ({
+    key,
+    label,
+  }));
+  const articleRows = MAIN_ARTICLE_PERMISSION_ROWS.map(([key, label]) => ({
+    key,
+    label,
+  }));
 
   return (
     <div className="space-y-5">
@@ -225,7 +244,9 @@ export function RoleManagementPanel() {
             rows={userRows}
             saving={saving}
             isEnabled={(role, permission) =>
-              selected[role as MainTenantRole].has(permission as MainTenantPermission)
+              selected[role as MainTenantRole].has(
+                permission as MainTenantPermission,
+              )
             }
             onToggle={handleToggle}
           />
@@ -237,7 +258,9 @@ export function RoleManagementPanel() {
             rows={settingsRows}
             saving={saving}
             isEnabled={(role, permission) =>
-              selected[role as MainTenantRole].has(permission as MainTenantPermission)
+              selected[role as MainTenantRole].has(
+                permission as MainTenantPermission,
+              )
             }
             onToggle={handleToggle}
           />
@@ -248,7 +271,11 @@ export function RoleManagementPanel() {
             columns={settingsColumns}
             rows={categoryRows}
             saving={saving}
-            isEnabled={(role, permission) => selected[role as MainTenantRole].has(permission as MainTenantPermission)}
+            isEnabled={(role, permission) =>
+              selected[role as MainTenantRole].has(
+                permission as MainTenantPermission,
+              )
+            }
             onToggle={handleToggle}
           />
           <PermissionMatrix
@@ -257,7 +284,11 @@ export function RoleManagementPanel() {
             columns={settingsColumns}
             rows={articleRows}
             saving={saving}
-            isEnabled={(role, permission) => selected[role as MainTenantRole].has(permission as MainTenantPermission)}
+            isEnabled={(role, permission) =>
+              selected[role as MainTenantRole].has(
+                permission as MainTenantPermission,
+              )
+            }
             onToggle={handleToggle}
           />
         </>

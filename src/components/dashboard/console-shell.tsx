@@ -127,7 +127,11 @@ export function ConsoleShell({
             >
               Cancel
             </Button>
-            <Button type="button" disabled={loggingOut} onClick={() => void confirmLogout()}>
+            <Button
+              type="button"
+              disabled={loggingOut}
+              onClick={() => void confirmLogout()}
+            >
               <LogOut className="size-4" />
               {loggingOut ? "Logging out…" : "Log out"}
             </Button>
