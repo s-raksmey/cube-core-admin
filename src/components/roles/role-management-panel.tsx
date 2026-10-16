@@ -72,6 +72,7 @@ export function RoleManagementPanel() {
         nextPermissions.add("TAG_VIEW");
       if (permission.startsWith("ARTICLE_") && permission !== "ARTICLE_VIEW")
         nextPermissions.add("ARTICLE_VIEW");
+      if (permission === "SETTINGS_UPDATE") nextPermissions.add("SETTINGS_VIEW");
       if (
         permission.startsWith("CATEGORY_") &&
         permission !== "CATEGORY_VIEW"
@@ -95,6 +96,9 @@ export function RoleManagementPanel() {
       } else if (permission === "ARTICLE_VIEW") {
         for (const [code] of MAIN_ARTICLE_PERMISSION_ROWS)
           nextPermissions.delete(code);
+      } else if (permission === "SETTINGS_VIEW") {
+        nextPermissions.delete("SETTINGS_VIEW");
+        nextPermissions.delete("SETTINGS_UPDATE");
       } else if (permission === "CATEGORY_VIEW") {
         for (const [categoryPermission] of MAIN_CATEGORY_PERMISSION_ROWS) {
           if (
@@ -258,7 +262,7 @@ export function RoleManagementPanel() {
 
           <PermissionMatrix
             title="Sub-tenant Settings"
-            description="Control who can view or edit branding and SEO settings. Editors can view settings but cannot edit them."
+            description="Site settings cover General, Website maintenance and branding, Social Links, SEO, and Content (Breaking duration). Editors may view site settings but cannot edit them."
             columns={settingsColumns}
             rows={settingsRows}
             saving={saving}

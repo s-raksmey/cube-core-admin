@@ -10,8 +10,8 @@ export const MAIN_USER_PERMISSION_ROWS = [
 ] as const;
 
 export const MAIN_SETTINGS_PERMISSION_ROWS = [
-  ["BRANDING_VIEW", "View settings"],
-  ["BRANDING_UPDATE", "Edit settings"],
+  ["SETTINGS_VIEW", "View site settings"],
+  ["SETTINGS_UPDATE", "Edit site settings"],
 ] as const;
 
 export const MAIN_ANALYTICS_PERMISSION_ROWS = [
@@ -82,7 +82,7 @@ export type PendingMainTenantPermissionToggle = {
 export const EDITOR_ALLOWED_PERMISSIONS = new Set<MainTenantPermission>([
   "USERS_VIEW",
   "USERS_EDIT",
-  "BRANDING_VIEW",
+  "SETTINGS_VIEW",
   "CATEGORY_VIEW",
   "CATEGORY_VIEW_SUBCATEGORY",
   "TAG_VIEW",
