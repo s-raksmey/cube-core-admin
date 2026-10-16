@@ -9,7 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { usePlatformAnalytics } from "@/hooks/use-platform-analytics";
 import type { AnalyticsPeriod } from "@/lib/apollo/generated/graphql";
-import { Activity, Building2, CirclePause, Users } from "lucide-react";
+import {
+  Activity,
+  Building2,
+  ChevronDown,
+  CirclePause,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 
 const periods: { value: AnalyticsPeriod; label: string }[] = [
@@ -64,21 +70,23 @@ export function PlatformAnalyticsSection({
         />
       )}
       <div className="flex flex-wrap items-end gap-3">
-        <label className="space-y-1 text-sm font-medium">
+        <label className="flex flex-col gap-2 text-sm font-medium">
           Period
-          <select
-            className="block h-9 rounded-md border border-input bg-background px-3 text-sm"
-            value={period}
-            onChange={(event) =>
-              setPeriod(event.target.value as AnalyticsPeriod)
-            }
-          >
-            {periods.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              className="h-9 appearance-none rounded-md border border-input bg-background px-3 pr-6 text-sm"
+              value={period}
+              onChange={(e) => setPeriod(e.target.value as AnalyticsPeriod)}
+            >
+              {periods.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+
+            <ChevronDown className="pointer-events-none absolute right-3 top-3 size-3.5" />
+          </div>
         </label>
         {period === "CUSTOM" ? (
           <>
