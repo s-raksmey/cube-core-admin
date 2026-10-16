@@ -1,35 +1,3 @@
-query PlatformDashboard {
-  platformDashboard {
-    totalSubTenants
-    activeSubTenants
-    totalAdmins
-    platformHealth
-    growthByMonth {
-      month
-      count
-    }
-    statusDistribution {
-      status
-      count
-    }
-    recentSubTenants {
-      id
-      name
-      slug
-      status
-      createdAt
-    }
-    recentActivity {
-      id
-      action
-      createdAt
-      actorEmail
-      targetTenantName
-      targetTenantSlug
-    }
-  }
-}
-
 query PlatformAuditLogs($page: Int) {
   platformAuditLogs(page: $page) {
     items {
@@ -46,44 +14,5 @@ query PlatformAuditLogs($page: Int) {
     total
     page
     pageSize
-  }
-}
-
-query TenantDashboard {
-  tenantDashboard {
-    tenant {
-      id
-      name
-      slug
-      status
-    }
-    totalUsers
-    activeUsers
-    publishedContent
-    mediaStorageBytes
-    contentActivityByMonth {
-      month
-      count
-    }
-    contentByStatus {
-      status
-      count
-    }
-    recentUsers {
-      id
-      email
-      fullName
-      role
-      status
-      createdAt
-    }
-    recentActivity {
-      id
-      action
-      createdAt
-      actorEmail
-      targetTenantName
-      targetTenantSlug
-    }
   }
 }

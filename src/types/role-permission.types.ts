@@ -14,6 +14,11 @@ export const MAIN_SETTINGS_PERMISSION_ROWS = [
   ["BRANDING_UPDATE", "Edit settings"],
 ] as const;
 
+export const MAIN_ANALYTICS_PERMISSION_ROWS = [
+  ["ANALYTICS_VIEW_TENANT", "View tenant analytics"],
+  ["ANALYTICS_VIEW_OWN", "View own analytics"],
+] as const;
+
 export const MAIN_CATEGORY_PERMISSION_ROWS = [
   ["CATEGORY_VIEW", "View category"],
   ["CATEGORY_VIEW_SUBCATEGORY", "View sub category"],
@@ -59,6 +64,7 @@ export type MainTenantSettingsPermission =
 export type MainTenantPermission =
   | MainTenantUserPermission
   | MainTenantSettingsPermission
+  | (typeof MAIN_ANALYTICS_PERMISSION_ROWS)[number][0]
   | (typeof MAIN_CATEGORY_PERMISSION_ROWS)[number][0]
   | (typeof MAIN_ARTICLE_PERMISSION_ROWS)[number][0];
 export type MainTenantPermissionState = Record<
@@ -80,6 +86,7 @@ export const EDITOR_ALLOWED_PERMISSIONS = new Set<MainTenantPermission>([
   "CATEGORY_VIEW",
   "CATEGORY_VIEW_SUBCATEGORY",
   "TAG_VIEW",
+  "ANALYTICS_VIEW_OWN",
   ...MAIN_ARTICLE_PERMISSION_ROWS.map(([code]) => code),
 ]);
 

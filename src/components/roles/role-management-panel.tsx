@@ -8,6 +8,7 @@ import { RolePermissionDialogs } from "@/components/roles/role-permission-dialog
 import { useMainRolePermissions } from "@/hooks/use-main-role-permissions";
 import {
   EDITOR_ALLOWED_PERMISSIONS,
+  MAIN_ANALYTICS_PERMISSION_ROWS,
   MAIN_ARTICLE_PERMISSION_ROWS,
   MAIN_CATEGORY_PERMISSION_ROWS,
   MAIN_PERMISSION_ROLES,
@@ -192,6 +193,10 @@ export function RoleManagementPanel() {
     key,
     label,
   }));
+  const analyticsRows = MAIN_ANALYTICS_PERMISSION_ROWS.map(([key, label]) => ({
+    key,
+    label,
+  }));
 
   return (
     <div className="space-y-5">
@@ -283,6 +288,19 @@ export function RoleManagementPanel() {
             description="Control writing, review, publishing, scheduling, and presentation actions."
             columns={settingsColumns}
             rows={articleRows}
+            saving={saving}
+            isEnabled={(role, permission) =>
+              selected[role as MainTenantRole].has(
+                permission as MainTenantPermission,
+              )
+            }
+            onToggle={handleToggle}
+          />
+          <PermissionMatrix
+            title="Analytics"
+            description="Tenant-wide access takes precedence when granted. Editors may be granted own-content access."
+            columns={settingsColumns}
+            rows={analyticsRows}
             saving={saving}
             isEnabled={(role, permission) =>
               selected[role as MainTenantRole].has(

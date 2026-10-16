@@ -1,0 +1,8 @@
+query PlatformAnalytics($range: AnalyticsRangeInput) {
+  platformAnalytics(range: $range) {
+    start end grouping
+    totalTenants activeTenants suspendedTenants tenantUsers
+    growth { date value }
+    tenantActivity { name count }
+  }
+}

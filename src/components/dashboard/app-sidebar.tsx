@@ -19,6 +19,7 @@ import type { AuthUser } from "@/lib/types";
 import {
   Activity,
   Box,
+  ChartNoAxesCombined,
   HeartPulse,
   LayoutDashboard,
   Settings,
@@ -43,6 +44,7 @@ const navigation: NavItem[] = [
     href: "/dashboard",
     icon: LayoutDashboard,
   },
+  { title: "Analytics", href: "/analytics", icon: ChartNoAxesCombined },
   {
     title: "Tenants",
     href: "/tenants",
