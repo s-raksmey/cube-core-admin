@@ -27,6 +27,14 @@ const inter = localFont({
   display: "swap",
 });
 
+const notoSansKhmer = localFont({
+  src: "../../public/fonts/NotoSansKhmer-VariableFont_wdth,wght.ttf",
+  variable: "--font-noto-sans-khmer",
+  weight: "100 900",
+  style: "normal",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: mainTenantDocumentTitle,
   description: "Cube Core management console",
@@ -37,7 +45,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} ${notoSansKhmer.variable} h-full antialiased`}>
       <body className="min-h-full bg-background font-sans text-foreground">
         <Script id="main-tenant-title" strategy="beforeInteractive">
           {`try { const title = localStorage.getItem("${mainTenantDocumentTitleStorageKey}"); if (title === "${mainTenantDocumentTitle}") document.title = title; } catch {}`}
