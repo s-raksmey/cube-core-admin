@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { UserAvatar } from "@/components/profile/user-avatar";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -91,15 +93,20 @@ export function ConsoleShell({
               Platform overview · Main Tenant
             </p>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setLogoutOpen(true)}
-              className="shrink-0"
-            >
-              <LogOut className="size-4" />
-              Logout
-            </Button>
+            <div className="flex shrink-0 items-center gap-3">
+              <Link href="/profile" aria-label="View my profile" title="My profile" className="rounded-full outline-none transition-shadow hover:ring-2 hover:ring-primary/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+                <UserAvatar user={user} />
+              </Link>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLogoutOpen(true)}
+                className="shrink-0"
+              >
+                <LogOut className="size-4" />
+                Logout
+              </Button>
+            </div>
           </div>
         </header>
 

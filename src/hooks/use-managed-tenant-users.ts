@@ -5,7 +5,7 @@ import { MANAGED_SUB_TENANT_USERS_QUERY } from "@/lib/apollo/operations";
 import { useQuery } from "@apollo/client/react";
 import { useEffect, useMemo } from "react";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 25;
 
 export function useManagedTenantUsers({
   tenantId,
@@ -17,6 +17,7 @@ export function useManagedTenantUsers({
   const { searchInput, setSearchInput, search, page, setPage, applySearch } =
     usePaginatedSearch();
   const query = useQuery(MANAGED_SUB_TENANT_USERS_QUERY, {
+    fetchPolicy: "network-only",
     variables: { tenantId, search: search || null, page, pageSize: PAGE_SIZE },
     skip: !canViewUsers,
   });
@@ -55,7 +56,11 @@ export function useManagedTenantUsers({
     search,
     page,
     setPage,
-    applySearch,
+    applySearch: () => {
+      if (searchInput.trim() === search && page === 1) {
+        void refetch().catch(() => undefined);
+      } else applySearch();
+    },
     users,
     total,
     pages,

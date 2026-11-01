@@ -5,7 +5,7 @@ import type { MainTenantUsersQuery } from "@/lib/apollo/types";
 import { useQuery } from "@apollo/client/react";
 import { useState } from "react";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 25;
 
 /** Owns Main Tenant user-list querying, search, and pagination. */
 export function useMainTenantUsers({
@@ -19,6 +19,7 @@ export function useMainTenantUsers({
   const { data, loading, error, refetch } = useQuery<MainTenantUsersQuery>(
     MAIN_TENANT_USERS_QUERY,
     {
+      fetchPolicy: "network-only",
       variables: { search: search || null, page, pageSize: PAGE_SIZE },
       skip: !canViewUsers,
     },
@@ -31,7 +32,10 @@ export function useMainTenantUsers({
 
   function applySearch() {
     const nextSearch = searchInput.trim();
-    if (nextSearch === search && page === 1) return;
+    if (nextSearch === search && page === 1) {
+      void refetch().catch(() => undefined);
+      return;
+    }
     setSearch(nextSearch);
     setPage(1);
   }

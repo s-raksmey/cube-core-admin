@@ -1,6 +1,10 @@
 query CurrentUser {
   me {
     id
+    avatarUrl
+    firstName
+    lastName
+    username
     email
     fullName
     type

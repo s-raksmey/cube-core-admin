@@ -31,6 +31,7 @@ export function SearchToolbar({
       <Input
         aria-label={label}
         placeholder={placeholder}
+        maxLength={160}
         value={value}
         onChange={(event) => onValueChange(event.target.value)}
       />

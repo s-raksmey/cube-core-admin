@@ -18,7 +18,7 @@ import type { TenantFormValues } from "@/types/tenant-management.types";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 25;
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
@@ -100,11 +100,11 @@ export function TenantManagementPanel() {
         setNotice("Tenant created.");
       }
       setFormTarget(null);
-      await refetch({
-        search: editing ? search || null : null,
-        page: editing ? page : 1,
-        pageSize: PAGE_SIZE,
-      });
+      if (editing) {
+        await refetch();
+      } else {
+        await refetch({ search: null, page: 1, pageSize: PAGE_SIZE });
+      }
     } catch (mutationError) {
       setFormError(getErrorMessage(mutationError, "Unable to save tenant."));
     }
@@ -170,7 +170,11 @@ export function TenantManagementPanel() {
           placeholder="Search by tenant name or slug"
           value={searchInput}
           onValueChange={setSearchInput}
-          onSearch={applySearch}
+          onSearch={() => {
+            if (searchInput.trim() === search && page === 1) {
+              void refetch().catch(() => undefined);
+            } else applySearch();
+          }}
         />
         <p className="text-sm text-muted-foreground" aria-live="polite">
           {notice ?? `${total} sub-tenant${total === 1 ? "" : "s"}`}

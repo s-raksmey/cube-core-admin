@@ -18,6 +18,7 @@ export function useSubTenants({
   pageSize: number;
 }) {
   const query = useQuery(SUB_TENANTS_QUERY, {
+    fetchPolicy: "network-only",
     variables: { search: search || null, page, pageSize },
   });
   const [createTenant, createState] = useMutation(CREATE_SUB_TENANT);
